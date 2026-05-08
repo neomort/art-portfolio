@@ -1,0 +1,4 @@
+# Supabase Edge Function config for echo-correlation
+# Make this function public (no JWT verification)
+[functions]
+verify_jwt = false

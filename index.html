@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SplitSpace - A marketplace for retail popups</title>
+    <!-- Add the Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Add Space Grotesk and Unbounded fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Unbounded:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- VisitorTracking: define init_tracer BEFORE loading tracer.js to avoid ReferenceError -->
+    <script>
+      function init_tracer() {
+        try {
+          const hostname = window.location.hostname;
+          const isDemo = hostname === 'demo.splitspace.com';
+          const websiteId = isDemo
+            ? '8191efd4-cc7d-44f6-b963-c123cd2a85bf' // demo.splitspace.com
+            : '55f3dcc7-fd4d-47fc-bbdf-1c558990c0d5'; // splitspace.com (default)
+
+          // Vendor-provided initialization
+          new Tracer({
+            websiteId,
+            async: true,
+            debug: false,
+          });
+        } catch (e) {
+          console.error('Error initializing Tracer:', e);
+        }
+      }
+    </script>
+    <!-- Load tracer.js with defer (not async) so parsing completes after init_tracer is defined -->
+    <script defer src="https://app.visitortracking.com/assets/js/tracer.js" onerror="console.warn('Failed to load Tracer script. Visitor tracking disabled.')"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

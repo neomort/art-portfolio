@@ -1,0 +1,305 @@
+.toggle-container{background-color:transparent}.active-toggle{background-color:#620E28!important;color:#fff!important}
+
+/* SurveyJS styling overrides to match Splitspace inputs */
+.sd-root-modern .sd-element__title,
+.sd-root-modern .sd-title,
+.sd-root-modern .sd-question__title {
+  font-size: 0.875rem !important; /* text-sm */
+  line-height: 1.25rem !important; /* match tailwind text-sm leading-5 */
+  font-weight: 500 !important; /* font-medium */
+  color: #620E28 !important; /* maroon */
+  margin-bottom: 0.5rem !important; /* mb-2 */
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+/* Ensure inner text span uses small sizing as well */
+.sd-root-modern .sv-string-viewer,
+.sd-root-modern .sd-question__title .sv-string-viewer,
+.sd-root-modern .sd-title .sv-string-viewer {
+  font-size: 0.875rem !important; /* text-sm */
+  line-height: 1.25rem !important;
+  font-weight: 500 !important; /* font-medium */
+  color: #620E28 !important;
+}
+
+/* Make option text (radio/checkbox choices) black, not maroon */
+.sd-root-modern .sd-selectbase .sv-string-viewer,
+.sd-root-modern .sd-radiogroup .sd-item__label .sv-string-viewer,
+.sd-root-modern .sd-checkbox .sd-item__label .sv-string-viewer,
+.sd-root-modern .sd-selectbase__label .sv-string-viewer {
+  color: #121826 !important; /* near-black to match site text */
+  font-weight: 500 !important; /* keep readable */
+}
+
+/* Even when selected/hovered, keep option text black */
+.sd-root-modern .sd-item--checked .sd-item__label .sv-string-viewer,
+.sd-root-modern .sd-item--hover .sd-item__label .sv-string-viewer {
+  color: #121826 !important;
+}
+
+.sd-root-modern .sd-body,
+.sd-root-modern .sd-rows {
+  padding: 0; /* border wrapper provides padding */
+}
+
+.sd-root-modern .sd-input,
+.sd-root-modern textarea.sd-input,
+.sd-root-modern .sd-dropdown .sd-selectbase__control,
+.sd-root-modern select.sd-input,
+/* Fallbacks for editors without sd-input class */
+.sd-root-modern .sd-question textarea,
+.sd-root-modern .sd-question input[type="text"],
+.sd-root-modern .sd-question select {
+  border: 2px solid #e7d5dc !important; /* border-maroon-200 */
+  border-radius: 0.75rem !important; /* rounded-xl */
+  padding: 0.75rem !important; /* p-3 */
+  outline: none !important;
+}
+
+.sd-root-modern .sd-input:focus,
+.sd-root-modern textarea.sd-input:focus,
+.sd-root-modern .sd-dropdown .sd-selectbase__control:focus,
+.sd-root-modern select.sd-input:focus,
+.sd-root-modern .sd-question textarea:focus,
+.sd-root-modern .sd-question input[type="text"]:focus,
+.sd-root-modern .sd-question select:focus {
+  box-shadow: none !important; /* remove outer halo to prevent clipping */
+  border-color: #620E28 !important; /* use solid maroon border on focus */
+  outline: none !important;
+}
+.sd-question__content {
+  margin-bottom: 0.75rem; /* spacing between questions */
+  background: transparent !important;
+}
+
+/* Some themes paint background on element content wrapper */
+.sd-root-modern .sd-element__content {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.sd-root-modern .sd-item__control.sd-checkbox__control,
+.sd-root-modern .sd-item__control.sd-radiogroup__control {
+  border-color: #e7d5dc;
+}
+
+.sd-root-modern .sd-title.sd-question__title--required::after {
+  color: #620E28; /* required asterisk color */
+}
+
+/* Flatten/unwrap SurveyJS structure to remove boxes and extra titles */
+.sd-root-modern .sd-page,
+.sd-root-modern .sd-panel,
+.sd-root-modern .sd-panel__content,
+.sd-root-modern .sd-page__content,
+.sd-root-modern__wrapper,
+.sd-root-modern__wrapper form {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
+
+/* Hide form/page/panel titles; keep only per-question labels */
+.sd-root-modern .sd-form-title,
+.sd-root-modern .sd-page__title,
+.sd-root-modern .sd-panel__title {
+  display: none !important;
+}
+
+/* Remove outer gaps added by SurveyJS layout */
+.sd-root-modern .sd-container-modern,
+.sd-root-modern .sd-body {
+  padding: 0 !important;
+  background: transparent !important;
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure each question aligns with our spacing rhythm */
+.sd-root-modern .sd-question {
+  margin: 0 0 0.75rem 0; /* 12px bottom like our blocks */
+  border: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  isolation: isolate; /* create stacking context so focused input halo can appear above */
+  width: 100% !important;
+}
+
+/* Prevent vertical letter stacking by allowing normal wrapping and widths */
+.sd-root-modern .sd-title,
+.sd-root-modern .sd-question__title {
+  white-space: normal !important;
+  word-break: normal !important;
+  width: auto !important;
+}
+
+/* Remove SurveyJS header/underline decorations */
+.sd-root-modern .sd-form-title,
+.sd-root-modern .sd-page__title,
+.sd-root-modern .sd-panel__title,
+.sd-root-modern .sd-header__line,
+.sd-root-modern .sd-page__title-line,
+.sd-root-modern .sd-separator {
+  display: none !important;
+}
+
+/* Remove layout gaps from grid wrappers */
+.sd-root-modern .sv-components-row,
+.sd-root-modern .sv-components-column,
+.sd-root-modern .sd-row {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+  border-radius: 0 !important;
+}
+
+/* Make upper-level wrappers not create extra boxes */
+.sd-root-modern .sd-container-modern,
+.sd-root-modern .sv-components-row,
+.sd-root-modern .sv-components-column,
+.sd-root-modern .sd-body,
+.sd-root-modern .sd-page,
+.sd-root-modern .sd-page__content,
+.sd-root-modern .sd-row,
+.sd-root-modern .sd-clearfix,
+.sd-root-modern .sd-page__row {
+  display: revert !important; /* restore native layout (flex/grid) */
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: visible !important;
+  width: 100% !important; /* ensure full width */
+}
+
+/* Remove default element frame so questions are not boxed */
+.sd-root-modern .sd-element--with-frame,
+.sd-root-modern .sd-element,
+.sd-root-modern .sd-question__content--left,
+.sd-root-modern .sd-question__content--top {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.sd-root-modern .sd-element--with-frame::before,
+.sd-root-modern .sd-element--with-frame::after,
+.sd-root-modern .sd-question__content--left::before,
+.sd-root-modern .sd-question__content--left::after,
+.sd-root-modern .sd-question__content--top::before,
+.sd-root-modern .sd-question__content--top::after {
+  content: none !important;
+}
+
+/* Kill any theme background variables contributing to grey panels */
+.sd-root-modern {
+  --sjs-general-backcolor: transparent !important;
+  --sjs-page-background-color: transparent !important;
+  --sjs-questionpanel-backcolor: transparent !important;
+  --sjs-questionpanel-hovercolor: transparent !important;
+  --sjs-questionpanel-corner-radius: 0 !important;
+  --sjs-questionpanel-border-width: 0 !important;
+  --sjs-border-light: transparent !important;
+  --sjs-border-default: transparent !important;
+  --sjs-editor-background: #ffffff !important;
+  /* Brand accent for radios/checkboxes */
+  --sjs-primary-backcolor: #EA6C56 !important;
+  --sjs-primary-forecolor: #ffffff !important;
+}
+
+/* Eliminate grey background on the mobile full-container root the user saw */
+.sd-root-modern.sd-progress--pages.sd-root-modern--mobile.sd-root-modern--full-container {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Be defensive: any variant of full-container should be transparent */
+.sd-root-modern.sd-root-modern--full-container,
+.sd-root-modern--full-container {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Keep inputs explicitly white without nuking all child backgrounds */
+.sd-root-modern input.sd-input,
+.sd-root-modern textarea.sd-input,
+.sd-root-modern .sd-question input[type="text"],
+.sd-root-modern .sd-question textarea,
+.sd-root-modern select.sd-input,
+.sd-root-modern .sd-question select {
+  background-color: #ffffff !important;
+}
+
+/* Ensure focus ring never clips */
+.sd-root-modern .sd-question:focus-within {
+  position: relative;
+  z-index: 2;
+}
+
+/* Indent radio and checkbox options slightly to avoid edge clipping */
+.sd-root-modern .sd-selectbase,
+.sd-root-modern .sd-radiogroup,
+.sd-root-modern .sd-checkbox {
+  padding-left: 8px !important;
+}
+.sd-root-modern .sd-item {
+  margin-left: 6px !important;
+}
+.sd-root-modern .sd-selectbase__label {
+  margin-left: 6px !important;
+}
+
+/* Brand the native inputs when present */
+.sd-root-modern input[type="radio"],
+.sd-root-modern input[type="checkbox"] {
+  accent-color: #EA6C56 !important;
+}
+
+/* Fallback for SurveyJS decorators (if used instead of native accent-color) */
+.sd-root-modern .sd-radiogroup .sd-item--checked .sd-item__decorator,
+.sd-root-modern .sd-checkbox .sd-item--checked .sd-item__decorator {
+  border-color: #EA6C56 !important;
+  background-color: #EA6C56 !important;
+}
+
+/* When a question is focused, suppress any wrapper frame so only halo is visible */
+.sd-root-modern .sd-element--with-frame.sd-element--focused,
+.sd-root-modern .sd-element--with-frame:focus-within,
+.sd-root-modern .sd-element:focus-within,
+.sd-root-modern .sd-question:focus-within .sd-element--with-frame,
+.sd-root-modern .sd-question:focus-within .sd-element {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.sd-root-modern .sd-question::before,
+.sd-root-modern .sd-question::after,
+.sd-root-modern .sd-element::before,
+.sd-root-modern .sd-element::after {
+  content: none !important; /* kill decorative frames that may render rounded edges */
+}
+.sd-root-modern .sd-element--with-frame.sd-element--focused::before,
+.sd-root-modern .sd-element--with-frame.sd-element--focused::after,
+.sd-root-modern .sd-element--with-frame:focus-within::before,
+.sd-root-modern .sd-element--with-frame:focus-within::after {
+  content: none !important;
+}
+
+/* Ensure textareas behave like our native ones and don't burst the layout */
+.sd-root-modern textarea.sd-input {
+  resize: vertical !important; /* allow vertical only */
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}

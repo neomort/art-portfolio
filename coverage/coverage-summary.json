@@ -1,0 +1,3 @@
+{"total": {"lines":{"total":39,"covered":31,"skipped":0,"pct":79.48},"statements":{"total":40,"covered":32,"skipped":0,"pct":80},"functions":{"total":16,"covered":9,"skipped":0,"pct":56.25},"branches":{"total":18,"covered":15,"skipped":0,"pct":83.33},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":"Unknown"}}
+,"/Users/david/CascadeProjects/splitspace/src/components/layout/Header.tsx": {"lines":{"total":39,"covered":31,"skipped":0,"pct":79.48},"functions":{"total":16,"covered":9,"skipped":0,"pct":56.25},"statements":{"total":40,"covered":32,"skipped":0,"pct":80},"branches":{"total":18,"covered":15,"skipped":0,"pct":83.33}}
+}

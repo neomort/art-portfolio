@@ -1,0 +1,101 @@
+-- Draft: Organization-aware RLS policies (no-op by default)
+-- This file documents recommended policies and includes checks to AVOID applying
+-- anything automatically. Uncomment specific sections once table mappings are confirmed.
+
+-- Recommended model assumptions:
+-- - Tables have organization_id referencing organizations.id
+-- - organization_members(user_id, organization_id, role) exists
+-- - RLS is enabled per table before creating policies
+
+-- Helper: role hierarchy
+-- owner > admin > member
+
+-- Example policy templates:
+--
+-- ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
+-- DROP POLICY IF EXISTS properties_select ON properties;
+-- CREATE POLICY properties_select ON properties
+--   FOR SELECT USING (
+--     EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = properties.organization_id
+--     )
+--   );
+--
+-- DROP POLICY IF EXISTS properties_modify ON properties;
+-- CREATE POLICY properties_modify ON properties
+--   FOR INSERT WITH CHECK (
+--     EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = properties.organization_id
+--         AND om.role IN ('owner','admin')
+--     )
+--   )
+--   TO authenticated;
+--
+-- CREATE POLICY properties_update ON properties
+--   FOR UPDATE USING (
+--     EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = properties.organization_id
+--         AND om.role IN ('owner','admin')
+--     )
+--   ) WITH CHECK (
+--     EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = properties.organization_id
+--         AND om.role IN ('owner','admin')
+--     )
+--   );
+--
+-- Repeat for bookings and inquiries with read permissions for participants
+-- and venue org members:
+--
+-- ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY bookings_select ON bookings
+--   FOR SELECT USING (
+--     -- requester or venue org members
+--     bookings.requester_id = auth.uid()
+--     OR EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = bookings.organization_id
+--     )
+--   );
+--
+-- CREATE POLICY bookings_update ON bookings
+--   FOR UPDATE USING (
+--     EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = bookings.organization_id
+--         AND om.role IN ('owner','admin')
+--     )
+--   );
+--
+-- ALTER TABLE inquiries ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY inquiries_select ON inquiries
+--   FOR SELECT USING (
+--     inquiries.requester_id = auth.uid()
+--     OR EXISTS (
+--       SELECT 1 FROM organization_members om
+--       WHERE om.user_id = auth.uid()
+--         AND om.organization_id = inquiries.organization_id
+--     )
+--   );
+--
+-- IMPORTANT: Confirm actual column names before enabling. Some tables may
+-- still reference profile IDs directly. Update queries accordingly.
+
+-- Safe diagnostic views (optional):
+-- View to spot rows missing organization linkage
+-- CREATE OR REPLACE VIEW debug_missing_org_links AS
+-- SELECT 'properties' AS table, id FROM properties WHERE organization_id IS NULL
+-- UNION ALL
+-- SELECT 'bookings'  AS table, id FROM bookings  WHERE organization_id IS NULL
+-- UNION ALL
+-- SELECT 'inquiries' AS table, id FROM inquiries WHERE organization_id IS NULL;

@@ -1,0 +1,4 @@
+# Supabase Edge Function config for health
+# Public healthcheck endpoint
+[functions]
+verify_jwt = false

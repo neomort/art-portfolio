@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook URL Checker</title>
+    <style>
+        body {
+            font-family: 'Space Grotesk', system-ui, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fff5f2 0%, #ffffff 50%, #fdf3f3 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .correct { color: #16a34a; font-weight: bold; }
+        .warning { color: #dc2626; font-weight: bold; }
+        .code {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 8px 0;
+            border-left: 4px solid #c13434;
+        }
+        .button {
+            background: #c13434;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #a12828;
+        }
+        .step {
+            margin: 16px 0;
+            padding: 16px;
+            border-left: 4px solid #c13434;
+            background: #fff5f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔗 Webhook URL Verification</h1>
+        
+        <div class="step">
+            <h3>✅ Your Webhook URL Format is Correct!</h3>
+            <div class="code">https://coandrdclvjebyoadoau.supabase.co/functions/v1/stripe-webhook</div>
+            <p>This follows the correct Supabase Edge Functions URL pattern for your project.</p>
+        </div>
+
+        <div class="step">
+            <h3>🔍 How to Verify This is YOUR Project:</h3>
+            <ol>
+                <li><strong>Check your .env file</strong> - Look for <code>VITE_SUPABASE_URL</code></li>
+                <li><strong>Or check Supabase Dashboard</strong> - Go to Settings → API</li>
+                <li><strong>Compare the project reference</strong> - Should be <code>coandrdclvjebyoadoau</code></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>🧪 Test Your Webhook URL:</h3>
+            <p>You can test if this URL is working by:</p>
+            <ol>
+                <li>Going to <strong>/webhook-debug</strong> in your app</li>
+                <li>Clicking <strong>"Test Webhook"</strong></li>
+                <li>Should return: <code>{"received": true}</code></li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>⚙️ Stripe Webhook Configuration:</h3>
+            <p><strong>Endpoint URL:</strong></p>
+            <div class="code">https://coandrdclvjebyoadoau.supabase.co/functions/v1/stripe-webhook</div>
+            
+            <p><strong>Required Events:</strong></p>
+            <ul>
+                <li>✅ payment_intent.succeeded</li>
+                <li>✅ payment_intent.payment_failed</li>
+                <li>✅ payment_intent.canceled</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>🔧 Next Steps to Fix Webhook:</h3>
+            <ol>
+                <li><strong>Get webhook secret</strong> from Stripe Dashboard → Developers → Webhooks → Your endpoint → "Reveal" signing secret</li>
+                <li><strong>Add to Supabase</strong> - Go to Supabase Dashboard → Settings → Environment Variables → Add <code>STRIPE_WEBHOOK_SECRET</code></li>
+                <li><strong>Add FRONTEND_URL</strong> - While in Environment Variables, also add <code>FRONTEND_URL=https://splitspace.com</code></li>
+                <li><strong>Test again</strong> - Use the /webhook-debug page in your app</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>🚀 Quick Actions:</h3>
+            <button class="button" onclick="window.open('https://dashboard.stripe.com/webhooks', '_blank')">
+                Open Stripe Webhooks
+            </button>
+            <button class="button" onclick="window.open('https://supabase.com/dashboard', '_blank')">
+                Open Supabase Dashboard
+            </button>
+            <button class="button" onclick="window.location.href='/webhook-debug'">
+                Test Webhook
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📋 Configuration Checklist:</h3>
+        <p>Use this checklist to ensure everything is set up correctly:</p>
+        
+        <div style="background: #f9fafb; padding: 16px; border-radius: 8px;">
+            <label><input type="checkbox"> Webhook URL is set to <code>https://coandrdclvjebyoadoau.supabase.co/functions/v1/stripe-webhook</code></label><br><br>
+            <label><input type="checkbox"> Events selected: payment_intent.succeeded, payment_intent.payment_failed, payment_intent.canceled</label><br><br>
+            <label><input type="checkbox"> Webhook secret copied from Stripe</label><br><br>
+            <label><input type="checkbox"> STRIPE_WEBHOOK_SECRET added to Supabase environment variables</label><br><br>
+            <label><input type="checkbox"> Webhook test returns {"received": true}</label><br><br>
+            <label><input type="checkbox"> Test payment updates booking status automatically</label>
+        </div>
+    </div>
+</body>
+</html>

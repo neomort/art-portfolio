@@ -1,0 +1,518 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Settings, Trash2, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+const InquirySettingsPage: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [editorValue, setEditorValue] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [error, setError] = useState<string | null>(null);
+  const [resetOpen, setResetOpen] = useState<boolean>(false);
+  // Mini builder state: array of text/comment questions
+  type Field = {
+    name: string;
+    title: string;
+    type: 'text' | 'comment' | 'radiogroup' | 'checkbox' | 'dropdown';
+    isRequired: boolean;
+    maxLength?: number; // only for text/comment
+    choices?: string[]; // for radiogroup/checkbox/dropdown
+  };
+  const [fields, setFields] = useState<Field[]>([]);
+
+  const defaultSurveyJson = useMemo(() => ({
+    title: 'Initiate Booking Inquiry – Additional Info',
+    showQuestionNumbers: 'off',
+    pages: [
+      {
+        name: 'page1',
+        elements: [
+          { type: 'comment', name: 'comments', title: 'Requirements/Comments/Questions', isRequired: false, maxLength: 2000 }
+        ]
+      }
+    ]
+  }), []);
+
+  function extractFieldsFromSurvey(survey: any): Field[] {
+    const elements = survey?.pages?.[0]?.elements || [];
+    const out: Field[] = [];
+    for (const el of elements as any[]) {
+      if (!el) continue;
+      let t: Field['type'] | undefined;
+      if (el.type === 'text') t = 'text';
+      else if (el.type === 'comment') t = 'comment';
+      else if (el.type === 'radiogroup') t = 'radiogroup';
+      else if (el.type === 'checkbox') t = 'checkbox';
+      else if (el.type === 'dropdown') t = 'dropdown';
+      if (!t) continue;
+      const base: Field = {
+        name: typeof el.name === 'string' ? el.name : '',
+        title: typeof el.title === 'string' ? el.title : '',
+        type: t,
+        isRequired: Boolean(el.isRequired),
+      };
+      if (t === 'text' || t === 'comment') {
+        base.maxLength = typeof el.maxLength === 'number' ? el.maxLength : undefined;
+      } else if (t === 'radiogroup' || t === 'checkbox' || t === 'dropdown') {
+        const rawChoices: any[] = Array.isArray(el.choices) ? el.choices : [];
+        base.choices = rawChoices
+          .map((c: any) => (typeof c === 'string' ? c : (typeof c?.value === 'string' ? c.value : '')))
+          .filter((s: any) => typeof s === 'string' && s.length > 0);
+        if (!base.choices || base.choices.length === 0) base.choices = ['Option 1', 'Option 2'];
+      }
+      out.push(base);
+    }
+    return out;
+  }
+
+  // Helpers: derive an internal name from a title and ensure uniqueness within a page
+  function slugifyTitle(title: string): string {
+    const base = (title || '').toLowerCase().trim()
+      .replace(/[^a-z0-9\s_-]+/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    return base || 'question';
+  }
+
+  function makeUniqueNames(titles: string[]): string[] {
+    const used = new Map<string, number>();
+    return titles.map((t) => {
+      const base = slugifyTitle(t);
+      const count = used.get(base) || 0;
+      used.set(base, count + 1);
+      return count === 0 ? base : `${base}_${count + 1}`;
+    });
+  }
+
+  function buildSurveyFromFields(fields: Field[]): any {
+    // Derive unique names from titles on save/build
+    const titles = fields.map(f => f.title || 'Untitled');
+    const derivedNames = makeUniqueNames(titles);
+    return {
+      // Hide survey title in the builder preview
+      showTitle: false,
+      showPageTitles: false,
+      showQuestionNumbers: 'off',
+      pages: [
+        {
+          name: 'page1',
+          elements: fields.map((f, idx) => {
+            const base = {
+              type: f.type,
+              name: derivedNames[idx],
+              title: f.title || 'Untitled',
+              isRequired: !!f.isRequired,
+            } as any;
+            if (f.type === 'text' || f.type === 'comment') {
+              if (typeof f.maxLength === 'number' && f.maxLength > 0) base.maxLength = f.maxLength;
+            } else if (f.type === 'radiogroup' || f.type === 'checkbox' || f.type === 'dropdown') {
+              base.choices = (Array.isArray(f.choices) && f.choices.length > 0 ? f.choices : ['Option 1', 'Option 2']);
+            }
+            return base;
+          }),
+        },
+      ],
+    };
+  }
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      if (!user) return;
+      try {
+        setLoading(true);
+        setError(null);
+        // Load user's primary organization
+        const { data: prof, error: profErr } = await supabase
+          .from('profiles')
+          .select('primary_organization_id')
+          .eq('id', user.id)
+          .single();
+        if (profErr) throw profErr;
+        const primaryOrgId = (prof as any)?.primary_organization_id || null;
+        setOrgId(primaryOrgId);
+        if (!primaryOrgId) {
+          const survey = defaultSurveyJson;
+          setEditorValue(JSON.stringify(survey, null, 2));
+          setFields(extractFieldsFromSurvey(survey));
+          return;
+        }
+
+        // Load existing form JSON
+        const { data: formRow, error: formErr } = await (supabase as any)
+          .from('organization_inquiry_forms')
+          .select('survey_json')
+          .eq('organization_id', primaryOrgId)
+          .maybeSingle();
+        if (formErr) throw formErr;
+
+        const survey = (formRow as any)?.survey_json || defaultSurveyJson;
+        setEditorValue(JSON.stringify(survey, null, 2));
+        setFields(extractFieldsFromSurvey(survey));
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load inquiry form configuration');
+        const survey = defaultSurveyJson;
+        setEditorValue(JSON.stringify(survey, null, 2));
+        setFields(extractFieldsFromSurvey(survey));
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, [user, defaultSurveyJson]);
+
+  async function handleSave() {
+    if (!orgId) {
+      setError('No organization found for your profile.');
+      return;
+    }
+    try {
+      setSaveStatus('saving');
+      setError(null);
+      // Persist the survey built from current fields to ensure consistency
+      const parsed = buildSurveyFromFields(fields);
+      const { error: upErr } = await (supabase as any)
+        .from('organization_inquiry_forms')
+        .upsert({
+          organization_id: orgId,
+          survey_json: parsed,
+          updated_at: new Date().toISOString(),
+          updated_by: user?.id || null,
+        }, { onConflict: 'organization_id' as any });
+      if (upErr) throw upErr;
+      setEditorValue(JSON.stringify(parsed, null, 2));
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 1500);
+    } catch (e: any) {
+      setError(e?.message || 'Failed to save form');
+      setSaveStatus('error');
+    }
+  }
+
+  function handleConfirmReset() {
+    const survey = defaultSurveyJson;
+    setEditorValue(JSON.stringify(survey, null, 2));
+    setFields(extractFieldsFromSurvey(survey));
+    setResetOpen(false);
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-maroon-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#FEFAF8] py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Settings className="h-8 w-8 text-maroon-600 mr-3" />
+            <h1 className="text-4xl font-bold text-maroon-800 font-display">Inquiry Settings</h1>
+          </div>
+          <Button variant="outline" onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle className="text-maroon-800">Inquiry Form Settings</CardTitle>
+                <CardDescription>
+                  Configure the questionnaire fields shown at the end of the Initiate Booking Inquiry flow.
+                </CardDescription>
+              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  const idx = fields.length + 1;
+                  const next: Field[] = [...fields, { name: `question_${idx}`, title: 'Untitled', type: 'comment', isRequired: false } as Field];
+                  setFields(next);
+                  setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                }}
+              >
+                Add Field
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-sm text-maroon-700">Loading form configuration…</div>
+            ) : (
+              <div className="space-y-4">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">{error}</div>
+                )}
+                {/* Mini Builder */}
+                <div className="space-y-3">
+                  <div className="space-y-3">
+                    {fields.length === 0 && (
+                      <div className="text-sm text-gray-600">No fields yet. Click "Add Field" to create your first question.</div>
+                    )}
+                    {fields.map((f, i) => (
+                      <div key={i} className="rounded-xl border-2 border-maroon-200 p-3 bg-white">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-medium text-maroon-800">Field {i + 1}</div>
+                          <div className="flex gap-2">
+                            <Button type="button" variant="outline" title="Delete" aria-label="Delete" onClick={() => {
+                              // delete
+                              const next: Field[] = fields.filter((_, j) => j !== i);
+                              setFields(next);
+                              setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                            }}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            {i > 0 && (
+                              <Button type="button" variant="outline" title="Move Up" aria-label="Move Up" onClick={() => {
+                                const next: Field[] = [...fields];
+                                const tmp = next[i - 1];
+                                next[i - 1] = next[i];
+                                next[i] = tmp;
+                                setFields(next);
+                                setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                              }}>
+                                <ArrowUp className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {i < fields.length - 1 && (
+                              <Button type="button" variant="outline" title="Move Down" aria-label="Move Down" onClick={() => {
+                                const next: Field[] = [...fields];
+                                const tmp = next[i + 1];
+                                next[i + 1] = next[i];
+                                next[i] = tmp;
+                                setFields(next);
+                                setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                              }}>
+                                <ArrowDown className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs text-maroon-700 mb-1">Field Type</label>
+                            <select
+                              className="w-full rounded-xl border-2 border-maroon-200 p-2"
+                              value={f.type}
+                              onChange={(e) => {
+                                const next = [...fields];
+                                const newType = e.target.value as Field['type'];
+                                next[i] = {
+                                  ...f,
+                                  type: newType,
+                                  ...((newType === 'radiogroup' || newType === 'checkbox' || newType === 'dropdown')
+                                    ? { choices: (f.choices && f.choices.length ? f.choices : ['Option 1', 'Option 2']), maxLength: undefined }
+                                    : {})
+                                } as Field;
+                                setFields(next);
+                                setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                              }}
+                            >
+                              <option value="text">Short Text</option>
+                              <option value="comment">Long Text</option>
+                              <option value="radiogroup">Radio Button Group</option>
+                              <option value="checkbox">Checkbox</option>
+                              <option value="dropdown">Dropdown</option>
+                            </select>
+                          </div>
+                          {(f.type === 'text' || f.type === 'comment') && (
+                            <div>
+                              <label className="block text-xs text-maroon-700 mb-1">Character Limit (optional)</label>
+                              <input
+                                type="number"
+                                min={0}
+                                className="w-full rounded-xl border-2 border-maroon-200 p-2"
+                                value={typeof f.maxLength === 'number' ? f.maxLength : ''}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const num = val === '' ? undefined : Math.max(0, Number(val));
+                                  const next = [...fields];
+                                  next[i] = { ...f, maxLength: num };
+                                  setFields(next);
+                                  setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                                }}
+                                placeholder="e.g. 200"
+                              />
+                            </div>
+                          )}
+                          <div className="md:col-span-2">
+                            <label className="block text-xs text-maroon-700 mb-1">Question Title</label>
+                            <input
+                              className="w-full rounded-xl border-2 border-maroon-200 p-2"
+                              value={f.title}
+                              onChange={(e) => {
+                                const next = [...fields];
+                                // Update title; name will be derived on save. For preview consistency we can also pre-derive name now.
+                                const newTitle = e.target.value;
+                                const draft = [...next];
+                                draft[i] = { ...f, title: newTitle } as Field;
+                                // Optionally keep a derived name in state to avoid duplicates; compute with current titles
+                                const titles = draft.map(ff => ff.title || 'Untitled');
+                                const names = makeUniqueNames(titles);
+                                draft[i].name = names[i];
+                                setFields(draft);
+                                setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                              }}
+                              placeholder="Visible label shown to users"
+                            />
+                        </div>
+                        <div>
+                          <label className="inline-flex items-center gap-2 text-xs text-maroon-700">
+                            <input
+                              type="checkbox"
+                              checked={f.isRequired}
+                              onChange={(e) => {
+                                const next = [...fields];
+                                next[i] = { ...f, isRequired: e.target.checked };
+                                setFields(next);
+                                setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                              }}
+                            />
+                            Required
+                          </label>
+                          </div>                
+                        
+                        </div>
+                        {(f.type === 'radiogroup' || f.type === 'checkbox' || f.type === 'dropdown') && (
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="text-xs text-maroon-700">Choices</label>
+                              <Button type="button" variant="outline" title="Add Choice" aria-label="Add Choice" onClick={() => {
+                                const next = [...fields];
+                                const choices = Array.isArray(f.choices) ? [...f.choices] : [];
+                                choices.push(`Option ${choices.length + 1}`);
+                                next[i] = { ...f, choices } as Field;
+                                setFields(next);
+                                setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                              }}>
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              {(f.choices || []).map((c, ci) => (
+                                <div key={ci} className="flex items-center gap-2">
+                                  <input
+                                    className="flex-1 rounded-xl border-2 border-maroon-200 p-2"
+                                    value={c}
+                                    onChange={(e) => {
+                                      const next = [...fields];
+                                      const choices = Array.isArray(f.choices) ? [...f.choices] : [];
+                                      choices[ci] = e.target.value;
+                                      next[i] = { ...f, choices } as Field;
+                                      setFields(next);
+                                      setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                                    }}
+                                  />
+                                  <Button type="button" variant="outline" title="Delete" aria-label="Delete" onClick={() => {
+                                    const next = [...fields];
+                                    const choices = (Array.isArray(f.choices) ? [...f.choices] : []).filter((_, idx) => idx !== ci);
+                                    next[i] = { ...f, choices } as Field;
+                                    setFields(next);
+                                    setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                                  }}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                  {ci > 0 && (
+                                    <Button type="button" variant="outline" title="Up" aria-label="Up" onClick={() => {
+                                      const next = [...fields];
+                                      const choices = Array.isArray(f.choices) ? [...f.choices] : [];
+                                      const tmp = choices[ci - 1];
+                                      choices[ci - 1] = choices[ci];
+                                      choices[ci] = tmp;
+                                      next[i] = { ...f, choices } as Field;
+                                      setFields(next);
+                                      setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                                    }}>
+                                      <ArrowUp className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  {ci < (f.choices?.length || 0) - 1 && (
+                                    <Button type="button" variant="outline" title="Down" aria-label="Down" onClick={() => {
+                                      const next = [...fields];
+                                      const choices = Array.isArray(f.choices) ? [...f.choices] : [];
+                                      const tmp = choices[ci + 1];
+                                      choices[ci + 1] = choices[ci];
+                                      choices[ci] = tmp;
+                                      next[i] = { ...f, choices } as Field;
+                                      setFields(next);
+                                      setEditorValue(JSON.stringify(buildSurveyFromFields(next), null, 2));
+                                    }}>
+                                      <ArrowDown className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* JSON editor fallback (hidden) */}
+                <div className="hidden">
+                  <div className="text-sm text-maroon-800 mb-2">Survey JSON</div>
+                  <textarea
+                    value={editorValue}
+                    onChange={(e) => {
+                      setEditorValue(e.target.value);
+                      // Try to parse and sync fields for power users editing JSON
+                      try {
+                        const parsed = JSON.parse(e.target.value || '{}');
+                        const next = extractFieldsFromSurvey(parsed);
+                        setFields(next);
+                      } catch {}
+                    }}
+                    className="w-full h-80 rounded-xl border-2 border-maroon-200 p-3 font-mono text-sm"
+                    spellCheck={false}
+                  />
+                  <div className="text-xs text-gray-500 mt-1">Tip: Keep it simple. We support SurveyJS schema.</div>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={handleSave} disabled={saveStatus === 'saving' || !orgId}>
+                    {saveStatus === 'saving' ? 'Saving…' : saveStatus === 'saved' ? 'Saved' : 'Save'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setResetOpen(true)}>Reset to Defaults</Button>
+                </div>
+
+                {/* Reset confirmation modal */}
+                {resetOpen && (
+                  <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="reset-dialog-title"
+                    className="fixed inset-0 z-50 flex items-center justify-center"
+                  >
+                    <div className="absolute inset-0 bg-black/30" onClick={() => setResetOpen(false)} />
+                    <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-5">
+                      <h2 id="reset-dialog-title" className="text-lg font-semibold text-maroon-800">Reset to Defaults</h2>
+                      <p className="mt-2 text-sm text-gray-700">
+                        This will replace your current questions with the default template. You must Save for the changes to go into effect.
+                      </p>
+                      <div className="mt-4 flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={() => setResetOpen(false)}>Cancel</Button>
+                        <Button type="button" onClick={handleConfirmReset}>Reset</Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default InquirySettingsPage;

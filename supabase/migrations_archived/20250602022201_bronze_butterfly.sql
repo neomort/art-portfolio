@@ -1,0 +1,2 @@
+-- This file has been deprecated.
+-- Please use 20250602021825_humble_morning.sql instead.

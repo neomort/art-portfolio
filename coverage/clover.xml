@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1753745221102" clover="3.2.0">
+  <project timestamp="1753745221102" name="All files">
+    <metrics statements="30" coveredstatements="30" conditionals="8" coveredconditionals="5" methods="6" coveredmethods="6" elements="44" coveredelements="41" complexity="0" loc="30" ncloc="30" packages="1" files="1" classes="1"/>
+    <file name="HeroSection.tsx" path="/Users/david/CascadeProjects/splitspace/src/components/home/HeroSection.tsx">
+      <metrics statements="30" coveredstatements="30" conditionals="8" coveredconditionals="5" methods="6" coveredmethods="6"/>
+      <line num="8" count="1" type="stmt"/>
+      <line num="9" count="55" type="stmt"/>
+      <line num="10" count="55" type="stmt"/>
+      <line num="11" count="54" type="stmt"/>
+      <line num="12" count="54" type="stmt"/>
+      <line num="13" count="54" type="stmt"/>
+      <line num="14" count="54" type="stmt"/>
+      <line num="15" count="54" type="stmt"/>
+      <line num="16" count="54" type="stmt"/>
+      <line num="19" count="54" type="stmt"/>
+      <line num="20" count="13" type="cond" truecount="2" falsecount="0"/>
+      <line num="21" count="12" type="stmt"/>
+      <line num="22" count="12" type="stmt"/>
+      <line num="24" count="1" type="stmt"/>
+      <line num="28" count="1" type="stmt"/>
+      <line num="31" count="2" type="stmt"/>
+      <line num="32" count="2" type="stmt"/>
+      <line num="33" count="2" type="stmt"/>
+      <line num="40" count="54" type="stmt"/>
+      <line num="41" count="5" type="stmt"/>
+      <line num="42" count="5" type="stmt"/>
+      <line num="43" count="5" type="stmt"/>
+      <line num="44" count="3" type="cond" truecount="1" falsecount="1"/>
+      <line num="45" count="3" type="stmt"/>
+      <line num="46" count="3" type="stmt"/>
+      <line num="53" count="3" type="stmt"/>
+      <line num="56" count="1" type="stmt"/>
+      <line num="58" count="4" type="stmt"/>
+      <line num="62" count="54" type="stmt"/>
+      <line num="82" count="19" type="stmt"/>
+    </file>
+  </project>
+</coverage>

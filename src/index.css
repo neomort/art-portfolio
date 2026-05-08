@@ -1,0 +1,497 @@
+/* Import Tailwind v4 (single import includes base/components/utilities) */
+@import 'tailwindcss';
+
+/* Register Tailwind plugins via CSS (v4 style) */
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+/* Define font families */
+@layer base {
+  :root {
+    --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Unbounded', ui-sans-serif, system-ui, sans-serif;
+  }
+  
+  /* Base styles */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: white;
+    color: rgb(17 24 39); /* gray-900 */
+    font-family: var(--font-sans);
+  }
+  
+  /* Apply Unbounded only to the main page heading */
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  
+  /* Reset all other elements to use Space Grotesk */
+  h2, h3, h4, h5, h6, p, a, span, div, button, input, textarea, label, .text-lg, .text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl {
+    font-family: var(--font-sans) !important;
+  }
+  
+  /* Explicit utility class for Unbounded font */
+  .font-unbounded {
+    font-family: var(--font-display) !important;
+  }
+  
+  /* Ensure border colors work as expected */
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: rgb(229 231 235); /* gray-200 */
+  }
+}
+
+/* Components: helpers that need stronger guarantees than utility order (Tailwind v4) */
+@layer components {
+  /* Force desktop nav to display:flex at md+ regardless of .hidden conflicts */
+  .header-desktop-nav {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .header-desktop-nav {
+      display: flex !important;
+    }
+  }
+
+  .brevo-signup-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .brevo-signup-container.brevo-signup-ready .brevo-signup-placeholder {
+    display: none;
+  }
+
+  .brevo-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .sib-form-message-panel {
+    display: none;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .sib-form-message-panel.brevo-message-visible {
+    display: block !important;
+  }
+
+  .brevo-signup-status {
+    display: none;
+    margin-bottom: 1.25rem;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 12px 32px -20px rgba(0, 0, 0, 0.3);
+  }
+
+  .brevo-signup-status:not(.hidden) {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .brevo-signup-status::before {
+    content: '';
+    display: inline-block;
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 9999px;
+    background-color: currentColor;
+    opacity: 0.4;
+  }
+
+  .brevo-signup-status--success {
+    background: rgba(232, 252, 243, 0.95);
+    color: #0f7655;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+
+  .brevo-signup-status--error {
+    background: rgba(255, 241, 241, 0.96);
+    color: #9f1239;
+    border: 1px solid rgba(244, 63, 94, 0.35);
+  }
+
+  .sib-form-message-panel[data-brevo-message='error'] {
+    display: none;
+    border-color: rgb(254, 202, 202);
+    background-color: rgb(254, 226, 226);
+    color: rgb(153, 27, 27);
+  }
+
+  .sib-form-message-panel[data-brevo-message='success'] {
+    display: none;
+    border-color: rgb(167, 243, 208);
+    background-color: rgb(236, 253, 245);
+    color: rgb(5, 150, 105);
+  }
+
+  .sib-form-message-panel svg {
+    height: 1.25rem;
+    width: 1.25rem;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .sib-form-message-panel__inner-text {
+    vertical-align: middle;
+  }
+
+  .sib-form-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .brevo-form .sib-form-block.sib-input {
+    width: 100%;
+    max-width: 28rem;
+  }
+
+  .sib-form-block__button-row {
+    display: inline-flex;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+  }
+
+  .sib-form-block__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #f87060, #f25a4f);
+    padding: 0.68rem 1.5rem;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 6px 14px -10px rgba(242, 106, 93, 0.7);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+  }
+
+  .sib-form-block__button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px -14px rgba(242, 106, 93, 0.75);
+  }
+
+  .sib-form-block__button:focus {
+    outline: 2px solid rgba(248, 112, 96, 0.35);
+    outline-offset: 2px;
+  }
+
+  .sib-form-block__button-icon {
+    display: none;
+  }
+
+  .entry__field .input,
+  .input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(127, 29, 29, 0.35);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #43151d;
+    background-color: #ffffff;
+  }
+
+  .entry__field .input:focus,
+  .input:focus {
+    border-color: #801b25;
+    outline: 2px solid rgba(214, 113, 129, 0.35);
+    outline-offset: 2px;
+  }
+
+  .entry__field .input::placeholder,
+  .input::placeholder {
+    color: rgba(67, 21, 29, 0.45);
+  }
+
+  .entry__error {
+    display: none;
+    font-size: 0.9rem;
+    color: rgb(185, 28, 28);
+  }
+
+  /* Hide Brevo honeypot field */
+  .brevo-form .input--hidden {
+    display: none !important;
+  }
+}
+
+body {
+  background-color: #FEFAF8;
+}
+
+/* Fix for anchor links being hidden under fixed header */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+[id] {
+  scroll-margin-top: 5rem;
+}
+
+/* Custom styles for rc-slider to match our theme */
+.rc-slider {
+  position: relative;
+  height: 14px;
+  padding: 5px 0;
+  width: 100%;
+  border-radius: 6px;
+  touch-action: none;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.rc-slider * {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.rc-slider-rail {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background-color: #f8cfcf;
+}
+
+.rc-slider-track {
+  position: absolute;
+  height: 6px;
+  border-radius: 3px;
+  background-color: #c13434;
+}
+
+.rc-slider-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  cursor: -webkit-grab;
+  cursor: grab;
+  margin-top: -7px;
+  border-radius: 50%;
+  border: 2px solid #c13434;
+  background-color: #c13434;
+  box-shadow: 0 2px 6px rgba(193, 52, 52, 0.3);
+  transition: all 0.2s ease-in-out;
+}
+
+.rc-slider-handle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(193, 52, 52, 0.4);
+}
+
+.rc-slider-handle:active {
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(193, 52, 52, 0.5);
+}
+
+.rc-slider-handle-dragging.rc-slider-handle-dragging.rc-slider-handle-dragging {
+  border-color: #a12828;
+  background-color: #a12828;
+  box-shadow: 0 0 0 5px rgba(193, 52, 52, 0.2);
+}
+
+.rc-slider-mark {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  width: 100%;
+  font-size: 12px;
+}
+
+.rc-slider-mark-text {
+  position: absolute;
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  cursor: pointer;
+  color: #999;
+}
+
+.rc-slider-mark-text-active {
+  color: #c13434;
+}
+
+.rc-slider-step {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+}
+
+.rc-slider-dot {
+  position: absolute;
+  bottom: -2px;
+  margin-left: -4px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #c13434;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.rc-slider-dot-active {
+  border-color: #c13434;
+}
+
+.rc-slider-dot-reverse {
+  margin-right: -4px;
+}
+
+.rc-slider-disabled {
+  background-color: #e9e9e9;
+}
+
+.rc-slider-disabled .rc-slider-track {
+  background-color: #ccc;
+}
+
+.rc-slider-disabled .rc-slider-handle,
+.rc-slider-disabled .rc-slider-dot {
+  border-color: #ccc;
+  box-shadow: none;
+  background-color: #fff;
+  cursor: not-allowed;
+}
+
+.rc-slider-disabled .rc-slider-mark-text,
+.rc-slider-disabled .rc-slider-dot {
+  cursor: not-allowed !important;
+}
+
+.rc-slider-tooltip-zoom-down-enter,
+.rc-slider-tooltip-zoom-down-appear {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  display: block !important;
+  animation-play-state: paused;
+}
+
+.rc-slider-tooltip-zoom-down-leave {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  display: block !important;
+  animation-play-state: paused;
+}
+
+.rc-slider-tooltip-zoom-down-enter.rc-slider-tooltip-zoom-down-enter-active,
+.rc-slider-tooltip-zoom-down-appear.rc-slider-tooltip-zoom-down-appear-active {
+  animation-name: rcSliderTooltipZoomDownIn;
+  animation-play-state: running;
+}
+
+.rc-slider-tooltip-zoom-down-leave.rc-slider-tooltip-zoom-down-leave-active {
+  animation-name: rcSliderTooltipZoomDownOut;
+  animation-play-state: running;
+}
+
+.rc-slider-tooltip-zoom-down-enter,
+.rc-slider-tooltip-zoom-down-appear {
+  transform: scale(0, 0);
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.rc-slider-tooltip-zoom-down-leave {
+  animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+}
+
+@keyframes rcSliderTooltipZoomDownIn {
+  0% {
+    opacity: 0;
+    transform-origin: 50% 100%;
+    transform: scale(0, 0);
+  }
+  100% {
+    transform-origin: 50% 100%;
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes rcSliderTooltipZoomDownOut {
+  0% {
+    transform-origin: 50% 100%;
+    transform: scale(1, 1);
+  }
+  100% {
+    opacity: 0;
+    transform-origin: 50% 100%;
+    transform: scale(0, 0);
+  }
+}
+
+.rc-slider-tooltip {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  visibility: visible;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.rc-slider-tooltip * {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.rc-slider-tooltip-hidden {
+  display: none;
+}
+
+.rc-slider-tooltip-placement-top {
+  padding: 4px 0 8px 0;
+}
+
+.rc-slider-tooltip-inner {
+  padding: 6px 2px;
+  min-width: 24px;
+  height: 24px;
+  font-size: 12px;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  background-color: #c13434;
+  border-radius: 6px;
+  box-shadow: 0 0 4px #d9d9d9;
+}
+
+.rc-slider-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.rc-slider-tooltip-placement-top .rc-slider-tooltip-arrow {
+  bottom: 4px;
+  left: 50%;
+  margin-left: -4px;
+  border-width: 4px 4px 0;
+  border-top-color: #c13434;
+}
