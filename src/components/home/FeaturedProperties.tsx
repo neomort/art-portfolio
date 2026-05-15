@@ -22,13 +22,13 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-4xl font-bold mb-3 text-[#121826] font-display">
-              Featured Spaces
+              Featured Artworks
             </h2>
             <p className="text-lg text-[#121826]">
-              Discover our handpicked selection of exceptional commercial spaces
+              Discover our handpicked selection of exceptional artwork
             </p>
           </div>
-          <Link to="/properties">
+          <Link to="/artworks">
             <Button variant="outline" className="hidden md:!flex items-center group">
               View All
               <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -50,9 +50,9 @@ const FeaturedProperties: React.FC<FeaturedPropertiesProps> = ({
         </div>
 
         <div className="mt-12 text-center md:hidden">
-          <Link to="/properties">
+          <Link to="/artworks">
             <Button variant="outline">
-              View All Spaces
+              View All Artworks
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
