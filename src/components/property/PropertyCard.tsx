@@ -184,7 +184,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {imagesArr[0] ? (
             <img
               src={imagesArr[0]}
-              alt={title ?? 'Property image'}
+              alt={title ?? 'Artwork image'}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -208,7 +208,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     className="w-full mt-4"
     onClick={() => onManageProperty && onManageProperty(id)}
   >
-    Manage Property
+    Manage Artwork
   </Button>
 </div>
       </Card>
@@ -239,7 +239,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {imagesArr[currentImageIndex] ? (
             <img
               src={imagesArr[currentImageIndex]}
-              alt={title ?? 'Property image'}
+              alt={title ?? 'Artwork image'}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
@@ -286,7 +286,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             </>
           )}
           
-          {/* Property type badge and draft indicator */}
+          {/* Artwork type badge and draft indicator */}
           <div className="absolute top-2 left-2 flex space-x-2">
             <div className="bg-white text-[#EA6C56] text-xs font-medium px-3 py-1 rounded-full capitalize">
               {propertyTypeLabel.charAt(0).toUpperCase() + propertyTypeLabel.slice(1)}
