@@ -94,7 +94,7 @@ function App() {
           <Route path="/proposal/:id/finalize" element={<ProposalFinalizePage />} />
           <Route path="/payment/:id" element={<PaymentPage />} />
           <Route path="/payment/:id/confirmation" element={<PaymentConfirmationPage />} />
-          <Route path="/list-property" element={<ListPropertyPage />} />
+          <Route path="/add-artwork" element={<ListPropertyPage />} />
           <Route path="/webhook-debug" element={<WebhookDebugPage />} />
           <Route path="/stripe-test" element={<StripeTestPage />} />
           <Route path="/payment-debug" element={<PaymentDebugPage />} />

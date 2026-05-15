@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Calendar, ArrowRight, Loader } from 'lucide-react';
+import { Search, MapPin, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { geocodeAddress, reverseGeocode } from '../../lib/geocoding';
@@ -10,18 +10,13 @@ const DEFAULT_RADIUS = 25;
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
   const [location, setLocation] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [userLocationLabel, setUserLocationLabel] = useState<string>('');
-  const [geolocating, setGeolocating] = useState(false);
-  const [geoError, setGeoError] = useState<string | null>(null);
 
   // Try to get user's location when component mounts
   useEffect(() => {
     if (navigator.geolocation) {
-      setGeolocating(true);
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const coords = {
@@ -33,12 +28,9 @@ const HeroSection: React.FC = () => {
           const label = await reverseGeocode(coords.lat, coords.lng);
           console.log('Detected location label:', label); // Debug log
           if (label) setUserLocationLabel(label);
-          setGeolocating(false);
         },
         (error) => {
           console.error('Geolocation error:', error);
-          setGeoError(error.message);
-          setGeolocating(false);
         },
         { timeout: 30000, enableHighAccuracy: false, maximumAge: 300000 }
       );
@@ -66,11 +58,9 @@ const HeroSection: React.FC = () => {
           location: searchLocationLabel || '',
           lat: searchLatLng.lat.toString(),
           lng: searchLatLng.lng.toString(),
-          radius: DEFAULT_RADIUS.toString(),
-          ...(startDate && { start_date: startDate }),
-          ...(endDate && { end_date: endDate })
+          radius: DEFAULT_RADIUS.toString()
         });
-        navigate(`/properties?${searchParams.toString()}`);
+        navigate(`/artworks?${searchParams.toString()}`);
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -98,11 +88,11 @@ const HeroSection: React.FC = () => {
       <div className="container mx-auto px-4 py-24 md:py-32 lg:py-40 relative z-10 flex flex-col items-center">
         <div className="max-w-3xl text-center">
           <h1 className="text-[40px] font-medium text-[#121826] mb-6 leading-[48px] tracking-[0px] text-center font-unbounded mx-auto">
-            Find the Perfect Space<br></br>to Grow Your Business
+            Discover Amazing Artwork<br></br>from Talented Artists
           </h1>
           <p className="text-xl text-[#121826] text-center mb-8 max-w-3xl font-sans mx-auto">
-            Discover and book short-term commercial spaces for retail, pop-ups, events, 
-            and more. Your perfect business location is just a few clicks away.
+            Explore paintings, sculptures, photography, and digital art from emerging and 
+            established artists. Find the perfect piece for your collection.
           </p>
           
           {/* Search Form */}
@@ -133,42 +123,42 @@ const HeroSection: React.FC = () => {
           {/* Categories */}
           <div className="flex flex-wrap gap-3 mb-12 justify-center w-full max-w-4xl mx-auto">
             <div className="flex flex-row flex-wrap gap-3 justify-center">
-              {/* Embedded Pop-ups */}
-              <Link to={getCategoryUrl('/properties?type=pop_up')}>
-                <Button 
-                  variant="outline" 
-                  className="bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white border border-white/30 hover:border-white/50 group whitespace-nowrap"
-                >
-                  Embedded Pop-ups
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </Link>
-              
-              {/* Retail Spaces */}
-              <Link to={getCategoryUrl('/properties?type=retail')}>
-                <Button 
+              {/* Paintings */}
+              <Link to={getCategoryUrl('/artworks?type=painting')}>
+                <Button
                   variant="outline"
                   className="bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white border border-white/30 hover:border-white/50 group whitespace-nowrap"
                 >
-                  Retail Spaces
+                  Paintings
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              
-              {/* Event Venues */}
-              <Link to={getCategoryUrl('/properties?type=event_space')}>
-                <Button 
-                  variant="outline" 
+
+              {/* Sculptures */}
+              <Link to={getCategoryUrl('/artworks?type=sculpture')}>
+                <Button
+                  variant="outline"
                   className="bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white border border-white/30 hover:border-white/50 group whitespace-nowrap"
                 >
-                  Event Venues
+                  Sculptures
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              
+
+              {/* Photography */}
+              <Link to={getCategoryUrl('/artworks?type=photography')}>
+                <Button
+                  variant="outline"
+                  className="bg-black/20 hover:bg-black/30 backdrop-blur-sm text-white border border-white/30 hover:border-white/50 group whitespace-nowrap"
+                >
+                  Photography
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+
               {/* Browse All - visually distinct */}
-              <Link to={getCategoryUrl('/properties')} className="inline-flex">
-                <Button 
+              <Link to={getCategoryUrl('/artworks')} className="inline-flex">
+                <Button
                   variant="outline"
                   className="bg-gray-800 hover:bg-gray-700 text-white border-none px-6 py-3 flex items-center group whitespace-nowrap"
                 >

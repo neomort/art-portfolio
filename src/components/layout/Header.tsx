@@ -178,15 +178,15 @@ const Header: React.FC = () => {
               </div>
             )}
             
-            {/* List Your Space button - always visible */}
-            <Link to="/list-property">
+            {/* Add Artwork button - always visible */}
+            <Link to="/add-artwork">
               <Button
                 variant="primary"
                 size="sm"
                 className="flex items-center font-display text-base font-semibold tracking-tight"
               >
                 <Building2 className="h-3.5 w-3.5 mr-1" />
-                <span>List Your Space</span>
+                <span>Add Artwork</span>
               </Button>
             </Link>
           </nav>
@@ -280,15 +280,15 @@ const Header: React.FC = () => {
               </Link>
             )}
             
-            {/* List Your Space button - always visible in mobile */}
+            {/* Add Artwork button - always visible in mobile */}
             <div className="pt-2">
-              <Link to="/list-property" onClick={() => setIsOpen(false)}>
-                <Button 
+              <Link to="/add-artwork" onClick={() => setIsOpen(false)}>
+                <Button
                   variant="primary"
                   className="w-full justify-center"
                 >
                   <Building2 className="h-4 w-4 mr-2" />
-                  List Your Space
+                  Add Artwork
                 </Button>
               </Link>
             </div>
