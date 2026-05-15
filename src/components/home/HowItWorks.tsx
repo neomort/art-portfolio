@@ -7,27 +7,27 @@ const steps = [
     description: (
       <>
         <a href="/signup" className="underline text-coral-600 hover:text-coral-700">Create your account</a>
-        {" "}and provide details about your business and the kinds of opportunities you are looking for.
+        {" "}and provide details about your art interests and the kinds of artwork you are looking for.
       </>
     ),
     icon: <ClipboardCheck className="h-12 w-12" />,
     color: 'bg-peach-100 text-peach-600',
   },
   {
-    title: 'Search For Space',
-    description: 'Start your search, filtering by location, availability, square footage, price, property type, and amenities. Save a list of your favorites.',
+    title: 'Search For Artwork',
+    description: 'Start your search, filtering by medium, style, artist, price, and other criteria. Save a list of your favorites.',
     icon: <MapPinned className="h-12 w-12" />,
     color: 'bg-coral-100 text-coral-600',
   },
   {
-    title: 'Inquire and Book',
-    description: 'Open an inquiry, detailing your requirements, brand identity, and questions. Work out the details, finalize pricing, agree to terms, and submit payment. ',
+    title: 'Connect with Artists',
+    description: 'Reach out to artists with questions about their work. Learn about their process, inspiration, and available pieces.',
     icon: <MessageCircleQuestion  className="h-12 w-12" />,
     color: 'bg-maroon-100 text-maroon-600',
   },
   {
-    title: 'Move In & Start Up',
-    description: 'Arrange a pre-move-in visit. Stay in touch with the venue host until your move in day. Enjoy a productive a new chapter in growing your business.',
+    title: 'Build Your Collection',
+    description: 'Purchase or commission artwork for your collection. Support artists and enjoy beautiful pieces in your space.',
     icon: <Building className="h-12 w-12" />,
     color: 'bg-peach-100 text-peach-600',
   },
@@ -39,10 +39,10 @@ const HowItWorks: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4 text-[#121826] font-display">
-            How SplitSpace Works
+            How Art Portfolio Works
           </h2>
           <p className="text-lg text-[#121826] max-w-4xl mx-auto">
-          SplitSpace connects businesses that want to expand their physical presence with available underutilized commercial spaces for pop-ups and other short- and medium-term engagements.
+          Art Portfolio connects art enthusiasts with talented artists. Discover unique artwork, connect directly with creators, and build your collection.
           </p>
         </div>
 
