@@ -4,25 +4,25 @@ import { Star } from 'lucide-react';
 const testimonials = [
   {
     id: 1,
-    text: "SplitSpace made it incredibly easy to find a retail space for our holiday pop-up shop. The booking process was seamless, and we were operational in just days.",
+    text: "Art Portfolio made it incredibly easy to discover unique artwork for my home. I found amazing pieces that I never would have discovered elsewhere.",
     author: "Sarah Johnson",
-    position: "Founder, Artisan Collective",
+    position: "Art Collector",
     avatar: "https://images.pexels.com/photos/762020/pexels-photo-762020.jpeg?auto=compress&cs=tinysrgb&w=120",
     rating: 5,
   },
   {
     id: 2,
-    text: "As a property owner, SplitSpace has increased my occupancy rate by 40%. Their platform is intuitive and their customer service is outstanding.",
+    text: "As an artist, Art Portfolio has helped me reach new collectors and sell my work. The platform is intuitive and their support is outstanding.",
     author: "Michael Chen",
-    position: "Commercial Property Owner",
+    position: "Visual Artist",
     avatar: "https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=120",
     rating: 5,
   },
   {
     id: 3,
-    text: "We needed a temporary event space for our product launch, and SplitSpace delivered. We found the perfect space in a prime location within our budget.",
+    text: "We needed artwork for our new office space, and Art Portfolio delivered. We found the perfect pieces that reflect our company's values.",
     author: "Priya Patel",
-    position: "Marketing Director, TechStart",
+    position: "Interior Designer",
     avatar: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=120",
     rating: 4,
   },
@@ -37,7 +37,7 @@ const Testimonials: React.FC = () => {
             What Our Users Say
           </h2>
           <p className="text-lg text-[#121826] max-w-4xl mx-auto">
-            Hear from businesses and property owners who have found success with SplitSpace.
+            Hear from art collectors and artists who have found success with Art Portfolio.
           </p>
         </div>
 
