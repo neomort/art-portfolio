@@ -237,7 +237,7 @@ const StaticPage: React.FC = () => {
           .from('pages')
           .select('title, content, type')
           .eq('slug', slug)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
         setPageData(data);

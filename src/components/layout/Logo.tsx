@@ -1,17 +1,17 @@
 import React from 'react';
 
 const Logo: React.FC = () => {
-  const [src, setSrc] = React.useState<string>("/splitspace-logo.svg");
+  const [src, setSrc] = React.useState<string>("/logo.svg");
 
   return (
     <div className="flex items-center">
       <img
         src={src}
-        alt="SplitSpace"
+        alt="Art Portfolio"
         className="h-8"
         onError={() => {
-          if (src !== "/splitspace-logo.png") {
-            setSrc("/splitspace-logo.png");
+          if (src !== "/logo.png") {
+            setSrc("/logo.png");
           }
         }}
       />

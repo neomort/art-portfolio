@@ -26,17 +26,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ propertyId, onSuccess }) => {
     if (!user) return;
     
     // Check if current user is the venue owner
-    const checkVenueOwner = async () => {
-      const { data: property } = await supabase
-        .from('properties')
-        .select('venue_id')
-        .eq('id', propertyId)
-        .single();
-      
-      setIsVenueOwner(property?.venue_id === user.id);
-    };
-
-    checkVenueOwner();
+    // Disabled for art portfolio - venue_id column doesn't exist
+    setIsVenueOwner(false);
     
     // Check if user has already reviewed this property
     const checkExistingReview = async () => {
@@ -47,7 +38,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ propertyId, onSuccess }) => {
         .eq('reviewer_id', user.id)
         .limit(1);
 
-      setHasReviewed(data && data.length > 0);
+      setHasReviewed(!!(data && data.length > 0));
     };
 
     checkExistingReview();

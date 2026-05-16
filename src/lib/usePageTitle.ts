@@ -9,5 +9,5 @@ export function usePageTitle(title: string) {
 }
 
 export function usePageHeaderTitle(label: string) {
-  usePageTitle(`SplitSpace - ${label}`);
+  usePageTitle(`Art Portfolio - ${label}`);
 }

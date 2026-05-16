@@ -42,9 +42,9 @@ export default function Footer() {
 
       {/* Company Info */}
       <div className="md:basis-2/5">
-        <h3 className="text-xl font-bold mb-4">SplitSpace</h3>
+        <h3 className="text-xl font-bold mb-4">Art Portfolio</h3>
         <p className="text-gray-300 mb-4">
-        Connect with unique venues and spaces for your next short-term retail pop-up, event, or creative project.
+        A personal art collection showcasing unique artwork and exhibitions.
         </p>
         <a href="/news-info" className="text-gray-300 mb-4 inline-flex items-center gap-2 hover:text-white transition-colors">
           <ArrowRight className="h-4 w-4" />
@@ -120,7 +120,7 @@ export default function Footer() {
     {/* Bottom Bar */}
     <div className="border-t border-gray-800 mt-8 pt-8 text-center">
       <p className="text-gray-400">
-        © {new Date().getFullYear()} SplitSpace. All rights reserved.
+        © {new Date().getFullYear()} Art Portfolio. All rights reserved.
       </p>
     </div>
   </div>

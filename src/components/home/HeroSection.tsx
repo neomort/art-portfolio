@@ -14,27 +14,9 @@ const HeroSection: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [userLocationLabel, setUserLocationLabel] = useState<string>('');
 
-  // Try to get user's location when component mounts
+  // Geolocation disabled for art portfolio (not needed)
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const coords = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setUserLocation(coords);
-          // Reverse geocode to get city, state
-          const label = await reverseGeocode(coords.lat, coords.lng);
-          console.log('Detected location label:', label); // Debug log
-          if (label) setUserLocationLabel(label);
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-        },
-        { timeout: 30000, enableHighAccuracy: false, maximumAge: 300000 }
-      );
-    }
+    // Intentionally empty
   }, []);
 
   const handleSearch = async () => {
@@ -78,7 +60,8 @@ const HeroSection: React.FC = () => {
         lng: userLocation.lng.toString(),
         radius: DEFAULT_RADIUS.toString(),
       });
-      return `${base}?${params.toString()}`;
+      const separator = base.includes('?') ? '&' : '?';
+      return `${base}${separator}${params.toString()}`;
     }
     return base;
   };

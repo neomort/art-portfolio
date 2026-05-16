@@ -867,7 +867,7 @@ const MessageThread: React.FC<MessageThreadProps> = ({ inquiryId, onClose, onInq
               },
               {
                 requestId: `message_notification_${newMessageData.id}`,
-                senderName: user?.full_name || 'SplitSpace User',
+                senderName: user?.full_name || 'Art Portfolio User',
                 propertyTitle: inquiry?.property?.title || 'Property',
                 messageContent: messageContent,
                 replyLink: `${window.location.origin}/messages?inquiry=${inquiryId}`

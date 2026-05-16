@@ -66,41 +66,10 @@ const FAQModule: React.FC<FAQModuleProps> = ({ categorySlugs, tagFilter, limit, 
   const derivedQ: string = typeof query === 'string' ? query : q;
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Load categories
-        let catQuery = supabase.from('faq_categories').select('*').order('position', { ascending: true });
-        if (categorySlugs && categorySlugs.length) {
-          catQuery = catQuery.in('slug', categorySlugs);
-        }
-        const { data: cats, error: catErr } = await catQuery;
-        if (catErr) throw catErr;
-        const categoryIds = (cats || []).map(c => c.id);
-
-        // Load entries
-        let entryQuery = supabase
-          .from('faq_entries')
-          .select('*')
-          .eq('published', true)
-          .order('position', { ascending: true });
-        if (categoryIds.length) entryQuery = entryQuery.in('category_id', categoryIds);
-        if (tagFilter && tagFilter.length) entryQuery = entryQuery.overlaps('tags', tagFilter);
-        if (limit) entryQuery = entryQuery.limit(limit);
-        const { data: ents, error: entErr } = await entryQuery;
-        if (entErr) throw entErr;
-
-        setCategories(cats || []);
-        setEntries((ents || []) as Entry[]);
-      } catch (e: any) {
-        console.error('Failed to load FAQ:', e);
-        setError(e?.message || 'Failed to load FAQ');
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    // Disabled for art portfolio - faq_categories/faq_entries tables not present
+    setCategories([]);
+    setEntries([]);
+    setLoading(false);
   }, [JSON.stringify(categorySlugs), JSON.stringify(tagFilter), limit]);
 
   const filtered = useMemo(() => {

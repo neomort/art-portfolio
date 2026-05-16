@@ -202,7 +202,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
     let active = true;
     (async () => {
       try {
-        const baseSelect = 'price_per_day, price_per_hour, weekly_rate_type, weekly_rate_value, weekly_rate, weekly_percent, monthly_rate_type, monthly_rate_value, monthly_rate, monthly_percent, yearly_rate_type, yearly_rate_value, yearly_rate, yearly_percent, iana_timezone, organization_id, tax_rate, fee_type, fee_value, fee_description, applied_adjustment_ids, capacity';
+        const baseSelect = '*';
 
         const trySelect = async (includeTokens: boolean) => {
           const select = includeTokens
@@ -217,7 +217,9 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
 
         let { data, error } = await trySelect(true);
         if (error && /applied_adjustment_tokens|PGRST204|column/i.test(error.message || '')) {
-          ({ data, error } = await trySelect(false));
+          const fallback = await trySelect(false);
+          data = fallback.data;
+          error = fallback.error;
         }
         if (error) throw error;
         if (!active) return;
@@ -316,6 +318,12 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
     let cancelled = false;
     (async () => {
       try {
+        // Skip survey loading entirely for art portfolio (no inquiry forms / edge function disabled)
+        setSurveyJson(null);
+        setSurveyModel(null);
+        setSurveyData(null);
+        return;
+        // eslint-disable-next-line no-unreachable
         if (!organizationId) {
           setSurveyJson(null);
           setSurveyModel(null);
@@ -330,16 +338,22 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
             .invoke('public-property-data', { body: { propertyId } });
           const maybe = (publicDataRes as any)?.data?.surveyJson;
           if (maybe && typeof maybe === 'object') json = maybe;
-        } catch {}
+        } catch {
+          // Ignore edge function errors for art portfolio
+        }
 
         if (!json) {
-          const { data, error } = await (supabase as any)
-            .from('organization_inquiry_forms')
-            .select('survey_json')
-            .eq('organization_id', organizationId)
-            .maybeSingle();
-          if (!error && (data as any)?.survey_json) {
-            json = (data as any).survey_json;
+          try {
+            const { data, error } = await (supabase as any)
+              .from('organization_inquiry_forms')
+              .select('survey_json')
+              .eq('organization_id', organizationId)
+              .maybeSingle();
+            if (!error && (data as any)?.survey_json) {
+              json = (data as any).survey_json;
+            }
+          } catch {
+            // Ignore table errors for art portfolio
           }
         }
 
@@ -411,9 +425,8 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
     let cancelled = false;
     (async () => {
       try {
-        const publicDataPromise = (supabase as any)
-          .functions
-          .invoke('public-property-data', { body: { propertyId } });
+        // Skip Edge Function entirely for art portfolio (no bookings/inquiries needed)
+        const publicDataPromise = Promise.resolve({ data: { bookings: [], orgAdjustments: [] } });
 
         let icalPromise: Promise<any>;
         if (supportsIcalUrl && icalUrl) {

@@ -9,7 +9,7 @@ interface EmailAttachment {
 }
 
 // Default sender email if not configured in the database
-const DEFAULT_SENDER_EMAIL = 'support@splitspace.com';
+const DEFAULT_SENDER_EMAIL = 'support@artportfolio.com';
 
 /**
  * Get the configured sender email from system settings
@@ -131,7 +131,7 @@ export async function sendNotification(
     
     // Add booking details URL if not already present
     if (messageData.bookingId && !messageData.bookingDetailsUrl) {
-      const frontendUrl = (env as any).VITE_FRONTEND_URL || 'https://splitspace.com';
+      const frontendUrl = (env as any).VITE_FRONTEND_URL || 'https://art.kyleadams.com';
       messageData.bookingDetailsUrl = `${frontendUrl}/dashboard?booking=${messageData.bookingId}`;
       console.log(`[${requestId}] Added booking details URL: ${messageData.bookingDetailsUrl}`);
     }

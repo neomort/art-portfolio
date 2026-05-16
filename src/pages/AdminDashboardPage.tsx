@@ -36,7 +36,7 @@ const AdminDashboardPage: React.FC = () => {
   const [updatingUser, setUpdatingUser] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [emailSettings, setEmailSettings] = useState({
-    senderEmail: 'support@splitspace.com',
+    senderEmail: 'support@artportfolio.com',
   });
   const [authSettings, setAuthSettings] = useState({
     requireEmailConfirmation: true,
@@ -398,7 +398,7 @@ const AdminDashboardPage: React.FC = () => {
       
       // Process settings
       const settings = (data as { key: string; value: string }[]) || [];
-      const emailSender = settings.find(s => s.key === 'email_sender')?.value || 'support@splitspace.com';
+      const emailSender = settings.find(s => s.key === 'email_sender')?.value || 'support@artportfolio.com';
       const authConfirm = settings.find(s => s.key === 'auth_email_confirm_enabled')?.value;
       const toBool = (v?: string) => {
         const t = (v ?? '').toLowerCase();
@@ -560,7 +560,7 @@ const AdminDashboardPage: React.FC = () => {
             <Shield className="h-5 w-5 mt-0.5" />
             <div className="text-sm">
               <p className="font-semibold">Impersonation Mode</p>
-              <p>You are viewing SplitSpace as <span className="font-medium">{impersonatedUser.email}</span>.</p>
+              <p>You are viewing Art Portfolio as <span className="font-medium">{impersonatedUser.email}</span>.</p>
             </div>
           </div>
           <Button

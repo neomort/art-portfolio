@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Fixed title for homepage only
-  usePageTitle('SplitSpace - A marketplace for retail popups');
+  usePageTitle('Art Portfolio - A personal art collection');
 
   useEffect(() => {
     loadFeaturedProperties();
@@ -29,27 +29,9 @@ const HomePage: React.FC = () => {
     }
   }, [user]);
 
-  // Load user's favorites
+  // Load user's favorites - disabled for art portfolio (table not needed)
   const loadFavorites = async () => {
-    if (!user) return;
-    
-    try {
-      const { data } = await supabase
-        .from('favorites')
-        .select('property_id')
-        .eq('user_id', user.id);
-      
-      const favMap: Record<string, boolean> = {};
-      if (data) {
-        data.forEach(fav => {
-          favMap[fav.property_id] = true;
-        });
-      }
-      
-      setFavorites(favMap);
-    } catch (err) {
-      console.error('Error loading favorites:', err);
-    }
+    setFavorites({});
   };
 
   // Toggle favorite status
@@ -95,8 +77,9 @@ const HomePage: React.FC = () => {
       if (propertiesError) throw propertiesError;
 
       // Transform properties data
-      const transformedProperties = propertiesData.map(property => ({
+      const transformedProperties = propertiesData.map((property: any) => ({
         ...property,
+        availability: Array.isArray((property as any).availability) ? (property as any).availability : [],
         address: {
           street: property.address_street ?? null,
           city: property.address_city ?? null,
@@ -110,7 +93,7 @@ const HomePage: React.FC = () => {
         }
       }));
 
-      setProperties(transformedProperties);
+      setProperties(transformedProperties as any);
 
       // Load ratings for each property
       const { data: reviewsData, error: reviewsError } = await supabase
@@ -119,7 +102,10 @@ const HomePage: React.FC = () => {
         .in('property_id', transformedProperties.map(p => p.id))
         .eq('status', 'approved');
 
-      if (reviewsError) throw reviewsError;
+      // Skip reviews error for art portfolio (table might not exist)
+      if (reviewsError) {
+        console.warn('Reviews query failed (table might not exist):', reviewsError);
+      }
 
       // Calculate average ratings and total reviews
       const ratings: Record<string, { rating: number; totalReviews: number }> = {};

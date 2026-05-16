@@ -79,7 +79,7 @@ const supabaseOptions = {
   },
   global: {
     headers: {
-      'X-Client-Info': 'splitspace-web/1.0.0',
+      'X-Client-Info': 'art-portfolio/1.0.0',
     },
   },
   db: {

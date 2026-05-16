@@ -8,6 +8,9 @@
 
 BEGIN;
 
+-- Enable UUID extension (Supabase uses gen_random_uuid by default)
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Create custom types (safe to run multiple times)
 DO $$ BEGIN
   CREATE TYPE org_adjustment_type AS ENUM (
@@ -104,7 +107,7 @@ DO $$ BEGIN
 END $$;
 
 CREATE TABLE IF NOT EXISTS organizations (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   name text NOT NULL,
   slug text,
   brevo_company_id text,
@@ -127,7 +130,7 @@ CREATE TABLE IF NOT EXISTS organization_members (
 );
 
 CREATE TABLE IF NOT EXISTS organization_member_invites (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   organization_id uuid NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
   email text NOT NULL,
   role text NOT NULL,
@@ -147,7 +150,7 @@ END $$;
 
 -- Property and venue tables
 CREATE TABLE IF NOT EXISTS properties (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   title text NOT NULL,
   description text NOT NULL,
   address_street text NOT NULL,

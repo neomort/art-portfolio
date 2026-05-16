@@ -26,8 +26,9 @@ export default defineConfig(({ mode }) => {
       global: 'globalThis',
     },
     optimizeDeps: {
-      exclude: ['lucide-react', 'fs'],
+      exclude: ['fs'],
       include: [
+        'lucide-react',
         'winston',
         '@tiptap/extension-text-align',
         '@tiptap/extension-highlight',

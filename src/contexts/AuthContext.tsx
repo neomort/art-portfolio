@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [passwordNeeded, setPasswordNeeded] = useState<boolean>(false);
   const [impersonatedUser, setImpersonatedUser] = useState<User | null>(null);
 
-  const STORAGE_KEY = 'splitspace.impersonation';
+  const STORAGE_KEY = 'artportfolio.impersonation';
 
   useEffect(() => {
     try {

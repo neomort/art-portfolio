@@ -86,6 +86,7 @@ function App() {
           <Route path="/auth/magic" element={<AuthMagicCallback />} />
           <Route path="/property/:id" element={<PropertyDetailsPage />} />
           <Route path="/properties" element={<PropertiesPage />} />
+          <Route path="/artworks" element={<PropertiesPage />} />
           <Route path="/properties/:id" element={<ManagePropertyPage />} />
           <Route path="/property/:id/inquire" element={<PropertyInquiryPage />} />
           <Route path="/messages" element={<MessagesPage />} />

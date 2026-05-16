@@ -15,7 +15,7 @@ const baseLogger: Logger = createLogger({
     format.splat(),
     format.json()
   ),
-  defaultMeta: { app: 'splitspace-web' },
+  defaultMeta: { app: 'art-portfolio' },
   transports: [
     new transports.Console({
       // Human-readable in dev console; JSON format already part of logger, but console transport

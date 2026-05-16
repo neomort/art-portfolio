@@ -83,7 +83,8 @@ const PropertyDetailsPage: React.FC = () => {
           const { isFavorited: isFav } = await isFavorite(user.id, property.id);
           setIsFavorited(isFav);
         } catch (err) {
-          console.error('Error checking favorite status:', err);
+          // Skip favorites check for art portfolio (table not needed)
+          setIsFavorited(false);
         }
       }
     };
@@ -146,7 +147,11 @@ const PropertyDetailsPage: React.FC = () => {
             .select('primary_organization_id')
             .eq('id', user.id)
             .single();
-          if (profErr) throw profErr;
+          if (profErr) {
+            // Skip profiles query for art portfolio (table not needed)
+            setUserBrandInfo('');
+            return;
+          }
 
           if (prof?.primary_organization_id) {
             const { data: org, error: orgErr } = await supabase
@@ -372,11 +377,13 @@ const PropertyDetailsPage: React.FC = () => {
             : Promise.resolve({ data: [], error: null } as any),
         ]);
 
-        if (reviewersRes.error) throw reviewersRes.error;
-        if (respondersRes.error) throw respondersRes.error;
-
-        reviewersMap = new Map<string, any>((reviewersRes.data || []).map((p: any) => [p.id, p]));
-        respondersMap = new Map<string, any>((respondersRes.data || []).map((p: any) => [p.id, p]));
+        // Skip profiles errors for art portfolio (table not needed)
+        if (!reviewersRes.error) {
+          reviewersMap = new Map<string, any>((reviewersRes.data || []).map((p: any) => [p.id, p]));
+        }
+        if (!respondersRes.error) {
+          respondersMap = new Map<string, any>((respondersRes.data || []).map((p: any) => [p.id, p]));
+        }
       }
 
       // Step 5: merge into display shape expected by PropertyReviews

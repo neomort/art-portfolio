@@ -486,25 +486,9 @@ const PropertiesPage: React.FC = () => {
   }, [dateFilters, searchParams, setSearchParams]);
 
   // Load user's favorites
+  // Disabled for art portfolio - favorites table not needed
   const loadFavorites = async () => {
-    if (!user) return;
-    
-    try {
-      const { data } = await supabase
-        .from('favorites')
-        .select('property_id')
-        .eq('user_id', user.id);
-      
-      const favMap: Record<string, boolean> = {};
-      const rows: FavoriteRow[] = (data as FavoriteRow[] | null) ?? [];
-      rows.forEach((fav) => {
-        favMap[fav.property_id] = true;
-      });
-      
-      setFavorites(favMap);
-    } catch (err) {
-      console.error('Error loading favorites:', err);
-    }
+    setFavorites({});
   };
 
   // Toggle favorite status
@@ -545,7 +529,7 @@ const PropertiesPage: React.FC = () => {
 
       let query = supabase
         .from('properties')
-        .select('*, reviews(rating)')
+        .select('*')
         // Only show published properties to the public
         .eq('published', true);
 
@@ -567,7 +551,12 @@ const PropertiesPage: React.FC = () => {
         const formattedTypes = filters.propertyTypes.map(type => 
           type.toLowerCase().replace(/\s+/g, '_')
         );
-        query = query.in('property_type', formattedTypes);
+        // Only apply filter if all values look like UUIDs; otherwise the DB column is UUID-typed
+        // and would throw 22P02. Slug-based filtering would need a lookup table.
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (formattedTypes.every(t => uuidRe.test(t))) {
+          query = query.in('property_type', formattedTypes);
+        }
         
         // Update URL with property type filter if not already there
         if (filters.propertyTypes.length === 1 && !searchParams.has('type')) {
@@ -592,7 +581,10 @@ const PropertiesPage: React.FC = () => {
       const currentSeq = querySeqRef.current;
       const { data, error: queryError } = await query as unknown as { data: PropertyRow[]; error: any };
 
-      if (queryError) throw queryError;
+      if (queryError) {
+        console.warn('Properties query failed:', queryError);
+        throw queryError;
+      }
 
       // Transform the properties data into full Property objects required by UI
       let transformedProperties: Property[] = (data || []).map((property: PropertyRow) => {
@@ -654,109 +646,122 @@ const PropertiesPage: React.FC = () => {
         const startDateObj = new Date(dateFilters.startDate);
         const endDateObj = new Date(dateFilters.endDate);
         
-        // Get all schedule data at once - but get the MOST RECENT schedule for each property
-        const { data: allScheduleData } = await supabase
-          .from('property_schedule')
-          .select('property_id, available_from, available_until, limit_availability, daily_schedule, updated_at')
-          .order('updated_at', { ascending: false });
-        
-        // Group schedules by property_id and take the most recent one for each property
-        // Using plain object instead of Map to avoid "Map is not a constructor" error
-        const scheduleMap: Record<string, ScheduleRow> = {};
-        (allScheduleData as ScheduleRow[] | null | undefined)?.forEach((schedule: ScheduleRow) => {
-          if (!scheduleMap[schedule.property_id]) {
-            scheduleMap[schedule.property_id] = schedule;
+        try {
+          // Get all schedule data at once - but get the MOST RECENT schedule for each property
+          const { data: allScheduleData, error: scheduleError } = await supabase
+            .from('property_schedule')
+            .select('property_id, available_from, available_until, limit_availability, daily_schedule, updated_at')
+            .order('updated_at', { ascending: false });
+          
+          if (scheduleError) {
+            console.warn('Schedule query failed (table might not exist):', scheduleError);
           }
-        });
-        
-        const scheduleData: ScheduleRow[] = Object.values(scheduleMap);
-        
-        const { data: availabilityData } = await supabase
-          .from('property_availability')
-          .select('property_id, start_date, end_date');
-        
-        console.log('Schedule data (most recent per property):', scheduleData);
-        console.log('Availability data:', availabilityData);
-        
-        transformedProperties = transformedProperties.filter(property => {
-          const scheduleEntry = scheduleData?.find((s: ScheduleRow) => s.property_id === property.id);
           
-          console.log(`Checking property ${property.title} (${property.id}):`, scheduleEntry);
+          // Group schedules by property_id and take the most recent one for each property
+          // Using plain object instead of Map to avoid "Map is not a constructor" error
+          const scheduleMap: Record<string, ScheduleRow> = {};
+          (allScheduleData as ScheduleRow[] | null | undefined)?.forEach((schedule: ScheduleRow) => {
+            if (!scheduleMap[schedule.property_id]) {
+              scheduleMap[schedule.property_id] = schedule;
+            }
+          });
           
-          // **STEP 1: Check Date Range Restrictions**
-          // This is completely independent of limit_availability
-          if (scheduleEntry) {
-            // Check available_from date restriction
-            if (scheduleEntry.available_from) {
-              const availableFrom = new Date(scheduleEntry.available_from);
-              console.log(`Property ${property.title} available from: ${availableFrom}, user start date: ${startDateObj}`);
-              if (startDateObj < availableFrom) {
-                console.log(`Property ${property.title} not yet available (before ${availableFrom.toDateString()}) - excluding`);
-                return false;
-              }
-            }
+          const scheduleData: ScheduleRow[] = Object.values(scheduleMap);
+          
+          const { data: availabilityData, error: availabilityError } = await supabase
+            .from('property_availability')
+            .select('property_id, start_date, end_date');
+          
+          if (availabilityError) {
+            console.warn('Availability query failed (table might not exist):', availabilityError);
+          }
+          
+          console.log('Schedule data (most recent per property):', scheduleData);
+          console.log('Availability data:', availabilityData);
+          
+          transformedProperties = transformedProperties.filter(property => {
+            const scheduleEntry = scheduleData?.find((s: ScheduleRow) => s.property_id === property.id);
             
-            // Check available_until date restriction
-            if (scheduleEntry.available_until) {
-              const availableUntil = new Date(scheduleEntry.available_until);
-              console.log(`Property ${property.title} available until: ${availableUntil}, user end date: ${endDateObj}`);
-              if (endDateObj > availableUntil) {
-                console.log(`Property ${property.title} no longer available (after ${availableUntil.toDateString()}) - excluding`);
-                return false;
-              }
-            }
+            console.log(`Checking property ${property.title} (${property.id}):`, scheduleEntry);
             
-            // **STEP 2: Check Daily Schedule (only if limit_availability is true)**
-            // This is where limit_availability comes into play
-            if (scheduleEntry.limit_availability === true) {
-              console.log(`Property ${property.title} has daily schedule restrictions - checking schedule`);
-              const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-              
-              // Check each day in the requested date range
-              for (let d = new Date(startDateObj); d <= endDateObj; d.setDate(d.getDate() + 1)) {
-                const dayName = daysOfWeek[d.getDay()];
-                const daySchedule = scheduleEntry.daily_schedule?.[dayName];
-                
-                if (!daySchedule || !daySchedule.enabled) {
-                  console.log(`Property ${property.title} not available on ${dayName} - excluding`);
+            // **STEP 1: Check Date Range Restrictions**
+            // This is completely independent of limit_availability
+            if (scheduleEntry) {
+              // Check available_from date restriction
+              if (scheduleEntry.available_from) {
+                const availableFrom = new Date(scheduleEntry.available_from);
+                console.log(`Property ${property.title} available from: ${availableFrom}, user start date: ${startDateObj}`);
+                if (startDateObj < availableFrom) {
+                  console.log(`Property ${property.title} not yet available (before ${availableFrom.toDateString()}) - excluding`);
                   return false;
                 }
               }
-              console.log(`Property ${property.title} passed daily schedule check`);
-            } else if (scheduleEntry.limit_availability === false) {
-              console.log(`Property ${property.title} is available 24/7 (no daily schedule restrictions)`);
+              
+              // Check available_until date restriction
+              if (scheduleEntry.available_until) {
+                const availableUntil = new Date(scheduleEntry.available_until);
+                console.log(`Property ${property.title} available until: ${availableUntil}, user end date: ${endDateObj}`);
+                if (endDateObj > availableUntil) {
+                  console.log(`Property ${property.title} no longer available (after ${availableUntil.toDateString()}) - excluding`);
+                  return false;
+                }
+              }
+              
+              // **STEP 2: Check Daily Schedule (only if limit_availability is true)**
+              // This is where limit_availability comes into play
+              if (scheduleEntry.limit_availability === true) {
+                console.log(`Property ${property.title} has daily schedule restrictions - checking schedule`);
+                const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                
+                // Check each day in the requested date range
+                for (let d = new Date(startDateObj); d <= endDateObj; d.setDate(d.getDate() + 1)) {
+                  const dayName = daysOfWeek[d.getDay()];
+                  const daySchedule = scheduleEntry.daily_schedule?.[dayName];
+                  
+                  if (!daySchedule || !daySchedule.enabled) {
+                    console.log(`Property ${property.title} not available on ${dayName} - excluding`);
+                    return false;
+                  }
+                }
+                console.log(`Property ${property.title} passed daily schedule check`);
+              } else if (scheduleEntry.limit_availability === false) {
+                console.log(`Property ${property.title} is available 24/7 (no daily schedule restrictions)`);
+              } else {
+                console.log(`Property ${property.title} has no limit_availability setting - assuming 24/7 availability`);
+              }
             } else {
-              console.log(`Property ${property.title} has no limit_availability setting - assuming 24/7 availability`);
+              // No schedule entry means no restrictions - property is available
+              console.log(`Property ${property.title} has no schedule entry - assuming always available`);
             }
-          } else {
-            // No schedule entry means no restrictions - property is available
-            console.log(`Property ${property.title} has no schedule entry - assuming always available`);
-          }
-          
-          // **STEP 3: Check Blocked Dates**
-          // Check blocked dates from property_availability table
-          const unavailableDates = (availabilityData as AvailabilityRow[] | null | undefined)?.filter((a: AvailabilityRow) => a.property_id === property.id) || [];
-          
-          for (const range of unavailableDates) {
-            const rangeStart = new Date(range.start_date);
-            const rangeEnd = new Date(range.end_date);
             
-            // Check if the requested dates overlap with any blocked dates
-            if (
-              (startDateObj <= rangeEnd && startDateObj >= rangeStart) ||
-              (endDateObj <= rangeEnd && endDateObj >= rangeStart) ||
-              (startDateObj <= rangeStart && endDateObj >= rangeEnd)
-            ) {
-              console.log(`Property ${property.title} has blocked dates in range ${rangeStart.toDateString()} to ${rangeEnd.toDateString()} - excluding`);
-              return false;
+            // **STEP 3: Check Blocked Dates**
+            // Check blocked dates from property_availability table
+            const unavailableDates = (availabilityData as AvailabilityRow[] | null | undefined)?.filter((a: AvailabilityRow) => a.property_id === property.id) || [];
+            
+            for (const range of unavailableDates) {
+              const rangeStart = new Date(range.start_date);
+              const rangeEnd = new Date(range.end_date);
+              
+              // Check if the requested dates overlap with any blocked dates
+              if (
+                (startDateObj <= rangeEnd && startDateObj >= rangeStart) ||
+                (endDateObj <= rangeEnd && endDateObj >= rangeStart) ||
+                (startDateObj <= rangeStart && endDateObj >= rangeEnd)
+              ) {
+                console.log(`Property ${property.title} has blocked dates in range ${rangeStart.toDateString()} to ${rangeEnd.toDateString()} - excluding`);
+                return false;
+              }
             }
-          }
+            
+            console.log(`Property ${property.title} is available for the requested dates - including`);
+            return true;
+          });
           
-          console.log(`Property ${property.title} is available for the requested dates - including`);
-          return true;
-        });
-        
-        console.log(`After date filtering: ${transformedProperties.length} properties remaining`);
+          console.log(`After date filtering: ${transformedProperties.length} properties remaining`);
+        } catch (err) {
+          console.warn('Date filtering failed (tables might not exist):', err);
+          // Continue without date filtering if tables don't exist
+        }
       }
 
       // Sort/filter by distance if coordinates are provided

@@ -10,10 +10,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/select-robots.mjs && npm run generate:sitemap",
+    "prebuild": "node scripts/select-robots.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "build": "vite build",
-    "postbuild": "npm run generate:sitemap",
+    "postbuild": "npm run generate:sitemap || true",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest --config=jest.config.mjs",

@@ -20,7 +20,7 @@ const ImpersonationBanner: React.FC = () => {
           <div>
             <p className="font-semibold">Impersonation mode active</p>
             <p className="text-amber-900/90">
-              Viewing SplitSpace as <span className="font-medium">{targetLabel}</span>.
+              Viewing Art Portfolio as <span className="font-medium">{targetLabel}</span>.
               {' '}Signed in as <span className="font-medium">{actingLabel}</span>.
             </p>
           </div>

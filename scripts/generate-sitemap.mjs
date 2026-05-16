@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 const RESERVED_STATIC_SLUGS = new Set([
   'admin',
