@@ -24,8 +24,9 @@ import PropertyInquiryPage from './pages/PropertyInquiryPage';
 import MessagesPage from './pages/MessagesPage';
 import CalendarPage from './pages/CalendarPage';
 import OpenProposalPage from './pages/OpenProposalPage';
-import PaymentPage from './pages/PaymentPage';
-import PaymentConfirmationPage from './pages/PaymentConfirmationPage';
+// Stripe payment pages disabled — see STRIPE_DISABLED.md
+// import PaymentPage from './pages/PaymentPage';
+// import PaymentConfirmationPage from './pages/PaymentConfirmationPage';
 import ListPropertyPage from './pages/ListPropertyPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import PageEditorPage from './pages/PageEditorPage';
@@ -39,8 +40,9 @@ import VendorLandingPage from './pages/VenueLandingPage';
 import { useAuth } from './contexts/AuthContext';
 import InquirySettingsPage from './pages/InquirySettingsPage';
 import WebhookDebugPage from './pages/WebhookDebugPage';
-import StripeTestPage from './pages/StripeTestPage';
-import PaymentDebugPage from './pages/PaymentDebugPage';
+// Stripe diagnostic pages disabled — see STRIPE_DISABLED.md
+// import StripeTestPage from './pages/StripeTestPage';
+// import PaymentDebugPage from './pages/PaymentDebugPage';
 import InquiryDebugPage from './pages/InquiryDebugPage';
 import ProposalFinalizePage from './pages/ProposalFinalizePage';
 
@@ -93,12 +95,8 @@ function App() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/open-proposal" element={<OpenProposalPage />} />
           <Route path="/proposal/:id/finalize" element={<ProposalFinalizePage />} />
-          <Route path="/payment/:id" element={<PaymentPage />} />
-          <Route path="/payment/:id/confirmation" element={<PaymentConfirmationPage />} />
           <Route path="/add-artwork" element={<ListPropertyPage />} />
           <Route path="/webhook-debug" element={<WebhookDebugPage />} />
-          <Route path="/stripe-test" element={<StripeTestPage />} />
-          <Route path="/payment-debug" element={<PaymentDebugPage />} />
           <Route path="/inquiry-debug" element={<InquiryDebugPage />} />
           <Route path="/inquiry-settings" element={<InquirySettingsPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />

@@ -98,13 +98,9 @@ export const supabase = createClient<Database>(
   supabaseOptions
 );
 
-export async function fetchProfile(userId: string) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, primary_organization_id, phone, avatar_url, is_admin, created_at, updated_at, brevo_opt_in, brevo_opt_in_ts')
-    .eq('id', userId)
-    .maybeSingle();
-  return { data, error };
+export async function fetchProfile(_userId: string) {
+  // Disabled for art portfolio - profiles table not present
+  return { data: null, error: null } as { data: any; error: any };
 }
 
 export async function createProfile(userId: string, data: {

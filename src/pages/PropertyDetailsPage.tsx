@@ -76,17 +76,8 @@ const PropertyDetailsPage: React.FC = () => {
 
     const loadData = async () => {
       await loadPropertyData();
-      
-      // Check if property is already favorited by the user
-      if (user && property) {
-        try {
-          const { isFavorited: isFav } = await isFavorite(user.id, property.id);
-          setIsFavorited(isFav);
-        } catch (err) {
-          // Skip favorites check for art portfolio (table not needed)
-          setIsFavorited(false);
-        }
-      }
+      // Favorites disabled for art portfolio - table not present
+      setIsFavorited(false);
     };
     
     loadData();
@@ -138,42 +129,9 @@ const PropertyDetailsPage: React.FC = () => {
   }, [property, sectionTarget, hasScrolledToSection]);
 
   // Load organization brand info if user is logged in and not the venue owner
+  // Disabled for art portfolio - profiles table not present
   useEffect(() => {
-    if (user && !isVenueOwner) {
-      const fetchOrgBrand = async () => {
-        try {
-          const { data: prof, error: profErr } = await supabase
-            .from('profiles')
-            .select('primary_organization_id')
-            .eq('id', user.id)
-            .single();
-          if (profErr) {
-            // Skip profiles query for art portfolio (table not needed)
-            setUserBrandInfo('');
-            return;
-          }
-
-          if (prof?.primary_organization_id) {
-            const { data: org, error: orgErr } = await supabase
-              .from('organizations')
-              .select('about_brand, business_type')
-              .eq('id', prof.primary_organization_id)
-              .single();
-            if (!orgErr && org) {
-              if ((org as any).business_type === 'merchant' && (org as any).about_brand) {
-                setUserBrandInfo((org as any).about_brand);
-              } else {
-                setUserBrandInfo('');
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Error loading organization brand info:', err);
-        }
-      };
-
-      fetchOrgBrand();
-    }
+    setUserBrandInfo('');
   }, [user, isVenueOwner]);
 
   // Toggle favorite status

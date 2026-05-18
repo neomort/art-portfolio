@@ -13,6 +13,7 @@ import { uploadPropertyImages } from '../lib/upload/r2Uploader';
 import { SPACE_ATTRIBUTES } from '../types';
 import { PROPERTY_TYPES, AMENITIES } from '../types';
 import { getLogger } from '../lib/logger';
+import { env } from '../lib/env';
 
 const ListPropertyPage: React.FC = () => {
   usePageHeaderTitle('List Your Space');
@@ -312,7 +313,7 @@ const ListPropertyPage: React.FC = () => {
       }
 
       // For published listings, check if organization has Stripe Connect set up
-      if (!saveAsDraft && !previewOnly) {
+      if (env.STRIPE_ENABLED && !saveAsDraft && !previewOnly) {
         const { data: organization, error: orgError } = await supabase
           .from('organizations')
           .select('stripe_account_id, charges_enabled')

@@ -68,6 +68,12 @@ export const env = {
   VITE_BREVO_API_KEY: viteEnv?.VITE_BREVO_API_KEY ?? defineEnv?.VITE_BREVO_API_KEY ?? nodeEnv?.VITE_BREVO_API_KEY,
   VITE_FRONTEND_URL: viteEnv?.VITE_FRONTEND_URL ?? defineEnv?.VITE_FRONTEND_URL ?? nodeEnv?.VITE_FRONTEND_URL,
   VITE_STRIPE_PUBLIC_KEY: viteEnv?.VITE_STRIPE_PUBLIC_KEY ?? defineEnv?.VITE_STRIPE_PUBLIC_KEY ?? nodeEnv?.VITE_STRIPE_PUBLIC_KEY,
+  // Master switch for all Stripe functionality. Defaults to false; see STRIPE_DISABLED.md
+  // to re-enable. When false, Stripe Connect UI is hidden and payment pages are unrouted.
+  STRIPE_ENABLED: toBool(
+    viteEnv?.VITE_STRIPE_ENABLED ?? nodeEnv?.VITE_STRIPE_ENABLED,
+    false,
+  ),
   // Whether email confirmation is required for signup. When false, hide confirmation page.
   AUTH_EMAIL_CONFIRM_ENABLED: toBool(
     viteEnv?.VITE_AUTH_EMAIL_CONFIRM_ENABLED ?? nodeEnv?.VITE_AUTH_EMAIL_CONFIRM_ENABLED,

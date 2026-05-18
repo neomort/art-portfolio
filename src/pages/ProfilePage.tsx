@@ -8,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Toast } from '../components/ui/toast';
+import { env } from '../lib/env';
 
 const slugifyOrgName = (value: string): string => {
   return value
@@ -1048,6 +1049,7 @@ const ProfilePage: React.FC = () => {
               )}
 
               {/* Payment Provider Settings */}
+              {env.STRIPE_ENABLED && (
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle className="flex items-center text-maroon-800">
@@ -1140,9 +1142,10 @@ const ProfilePage: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
+              )}
 
               {/* Payout Details (venues) */}
-              {organizationBusinessType === 'venue' && (
+              {env.STRIPE_ENABLED && organizationBusinessType === 'venue' && (
                 <Card className="mt-6">
                   <CardHeader>
                     <CardTitle className="flex items-center text-maroon-800">
