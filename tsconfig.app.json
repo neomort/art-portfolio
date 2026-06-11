@@ -29,6 +29,8 @@
     "src/pages/StripeTestPage.tsx",
     "src/components/payment/",
     "src/__tests__/components/payment/",
-    "src/__mocks__/stripe-js.ts"
+    "src/__mocks__/stripe-js.ts",
+    "src/pages/InquirySettingsPage.tsx",
+    "src/types/survey-creator-core.d.ts"
   ]
 }

@@ -46,10 +46,6 @@ function parseICalData(icsText: string): any[] {
   
   return events;
 }
-// SurveyJS (runtime renderer). If package not present, bundler will error; packages are installed.
-// SurveyJS dynamic imports to avoid hard bundling issues
-type SurveyModel = any; // loaded dynamically
-type SurveyComponentType = React.ComponentType<{ model: any }>; // loaded dynamically
 
 type PropertyScheduleRow = Database['public']['Tables']['property_schedule']['Row'];
 type InquiryInsert = Database['public']['Tables']['inquiries']['Insert'];
@@ -123,11 +119,6 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
   const [icalUrl, setIcalUrl] = useState<string | undefined>(undefined);
   const [blockedRanges, setBlockedRanges] = useState<{ start: string; end: string }[]>([]);
   const [supportsIcalUrl, setSupportsIcalUrl] = useState<boolean>(true);
-  // Organization-specific additional questions via SurveyJS
-  const [_surveyJson, setSurveyJson] = useState<any | null>(null);
-  const [surveyModel, setSurveyModel] = useState<SurveyModel | null>(null);
-  const [surveyData, setSurveyData] = useState<Record<string, any> | null>(null);
-  const [SurveyComp, setSurveyComp] = useState<SurveyComponentType | null>(null);
   // Helpers for local date parsing/formatting
   function parseLocalDate(str: string | undefined): Date | null {
     if (!str) return null;
@@ -313,110 +304,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
     return () => { active = false; };
   }, [propertyId, supportsIcalUrl]);
 
-  // Load organization survey form definition
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        // Skip survey loading entirely for art portfolio (no inquiry forms / edge function disabled)
-        setSurveyJson(null);
-        setSurveyModel(null);
-        setSurveyData(null);
-        return;
-        // eslint-disable-next-line no-unreachable
-        if (!organizationId) {
-          setSurveyJson(null);
-          setSurveyModel(null);
-          setSurveyData(null);
-          return;
-        }
-        // Prefer the Edge Function (already called elsewhere) to avoid RLS; if unavailable, fall back to direct select
-        let json: any | null = null;
-        try {
-          const publicDataRes = await (supabase as any)
-            .functions
-            .invoke('public-property-data', { body: { propertyId } });
-          const maybe = (publicDataRes as any)?.data?.surveyJson;
-          if (maybe && typeof maybe === 'object') json = maybe;
-        } catch {
-          // Ignore edge function errors for art portfolio
-        }
-
-        if (!json) {
-          try {
-            const { data, error } = await (supabase as any)
-              .from('organization_inquiry_forms')
-              .select('survey_json')
-              .eq('organization_id', organizationId)
-              .maybeSingle();
-            if (!error && (data as any)?.survey_json) {
-              json = (data as any).survey_json;
-            }
-          } catch {
-            // Ignore table errors for art portfolio
-          }
-        }
-
-        if (json) {
-          if (!cancelled) {
-            // dynamically import SurveyJS pieces only when needed
-            const [{ Model }, ui] = await Promise.all([
-              import('survey-core'),
-              import('survey-react-ui'),
-            ]);
-            // Load theme CSS for survey-core@2.3.8 (available files: survey-core.min.css, survey-core.css)
-            await import('survey-core/survey-core.min.css');
-            const model = new Model(json) as SurveyModel;
-            // Force-hide survey/page titles at runtime (some saved JSON may still include a title)
-            try {
-              (model as any).showTitle = false;
-              (model as any).showPageTitles = false;
-              (model as any).title = '';
-              const pages = (model as any).pages || [];
-              pages.forEach((p: any) => { p.showTitle = false; });
-
-              // Remove SurveyJS navigation/buttons and completed page; we submit via our own button
-              (model as any).showNavigationButtons = false;
-              (model as any).showPrevButton = false;
-              (model as any).showCompletedPage = false;
-              (model as any).navigationButtonsVisibility = 'hide';
-              (model as any).completedHtml = '';
-
-              // Prevent SurveyJS from clearing/changing answers when DOM reflows or elements become 'invisible'
-              // Keep all values unless explicitly changed by the user
-              (model as any).clearInvisibleValues = 'none';
-              (model as any).keepIncorrectValues = true;
-              (model as any).validateOnValueChanging = false;
-            } catch {}
-            // Update local data whenever values change
-            model.onValueChanged.add(() => {
-              setSurveyData({ ...(model.data || {}) });
-            });
-            // Initialize current data snapshot
-            setSurveyData({ ...(model.data || {}) });
-            setSurveyJson(json);
-            setSurveyModel(model);
-            setSurveyComp(() => ui.Survey as unknown as SurveyComponentType);
-          }
-        } else {
-          if (!cancelled) {
-            setSurveyJson(null);
-            setSurveyModel(null);
-            setSurveyData(null);
-            setSurveyComp(null);
-          }
-        }
-      } catch {
-        if (!cancelled) {
-          setSurveyJson(null);
-          setSurveyModel(null);
-          setSurveyData(null);
-          setSurveyComp(null);
-        }
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [organizationId, propertyId]);
+  // Survey loading disabled for art portfolio — see SURVEY_DISABLED.md
 
   // Org adjustments are now fetched via Edge Function alongside bookings
 
@@ -965,27 +853,6 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
           setupBuffer,
           cleanupBuffer,
         });
-        // Append SurveyJS answers into message if present (one block per question, formatted as Title:\nResponse)
-        let messageWithSurvey = payload.message;
-        if (surveyData && Object.keys(surveyData).length > 0) {
-          // Build name->title map from the survey model when available
-          const nameToTitle = new Map<string, string>();
-          try {
-            const anyModel: any = surveyModel as any;
-            const questions = anyModel?.getAllQuestions?.() || [];
-            for (const q of questions) {
-              if (q?.name) nameToTitle.set(q.name, q.title || q.name);
-            }
-          } catch {}
-          const blocks = Object.entries(surveyData)
-            .map(([k, v]) => {
-              const title = nameToTitle.get(k) || k;
-              const val = typeof v === 'string' ? v : JSON.stringify(v);
-              return `${title}:\n${val}`;
-            })
-            .join('\n\n');
-          messageWithSurvey = `${messageWithSurvey}\n\n${blocks}`;
-        }
 
         const { data, error } = await supabase.functions.invoke('submit-inquiry-lite', {
           body: {
@@ -996,7 +863,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
             endAt: payload.endAt,
             headcountValue: payload.headcountValue,
             selectedAdjustmentIds: payload.selectedAdjustmentIds,
-            message: messageWithSurvey,
+            message: payload.message,
             guestEmail: payload.guestEmail,
             guestName: payload.guestName,
             redirectPath: payload.redirectPath,
@@ -1062,27 +929,6 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
         setupBuffer,
         cleanupBuffer,
       });
-      
-      // Append SurveyJS answers into message if present
-      let messageWithSurvey = payload.message;
-      if (surveyData && Object.keys(surveyData).length > 0) {
-        const nameToTitle = new Map<string, string>();
-        try {
-          const anyModel: any = surveyModel as any;
-          const questions = anyModel?.getAllQuestions?.() || [];
-          for (const q of questions) {
-            if (q?.name) nameToTitle.set(q.name, q.title || q.name);
-          }
-        } catch {}
-        const blocks = Object.entries(surveyData)
-          .map(([k, v]) => {
-            const title = nameToTitle.get(k) || k;
-            const val = typeof v === 'string' ? v : JSON.stringify(v);
-            return `${title}:\n${val}`;
-          })
-          .join('\n\n');
-        messageWithSurvey = `${messageWithSurvey}\n\n${blocks}`;
-      }
 
       const { error } = await supabase.functions.invoke('submit-inquiry-lite', {
         body: {
@@ -1093,7 +939,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
           endAt: payload.endAt,
           headcountValue: payload.headcountValue,
           selectedAdjustmentIds: payload.selectedAdjustmentIds,
-          message: messageWithSurvey,
+          message: payload.message,
           guestEmail: payload.guestEmail,
           guestName: payload.guestName,
           redirectPath: payload.redirectPath,
@@ -1142,27 +988,6 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
         setupBuffer,
         cleanupBuffer,
       });
-      
-      // Append SurveyJS answers into message if present
-      let messageWithSurvey = payload.message;
-      if (surveyData && Object.keys(surveyData).length > 0) {
-        const nameToTitle = new Map<string, string>();
-        try {
-          const anyModel: any = surveyModel as any;
-          const questions = anyModel?.getAllQuestions?.() || [];
-          for (const q of questions) {
-            if (q?.name) nameToTitle.set(q.name, q.title || q.name);
-          }
-        } catch {}
-        const blocks = Object.entries(surveyData)
-          .map(([k, v]) => {
-            const title = nameToTitle.get(k) || k;
-            const val = typeof v === 'string' ? v : JSON.stringify(v);
-            return `${title}:\n${val}`;
-          })
-          .join('\n\n');
-        messageWithSurvey = `${messageWithSurvey}\n\n${blocks}`;
-      }
 
       const { data: inquiry, error: inquiryError } = await supabase
         .from('inquiries')
@@ -1175,7 +1000,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
           end_at: payload.endAt,
           headcount: payload.headcountValue,
           selected_adjustment_ids: payload.selectedAdjustmentIds.length > 0 ? payload.selectedAdjustmentIds : null,
-          message: messageWithSurvey,
+          message: payload.message,
           status: 'pending',
         } satisfies InquiryInsert)
         .select('id')
@@ -2176,12 +2001,7 @@ const InquiryForm: React.FC<InquiryFormProps> = ({
             </div>
           )}
 
-          {/* Organization-specific additional questions (Survey) */}
-          {SurveyComp && surveyModel && (
-            <div className="mt-6">
-              <SurveyComp model={surveyModel} />
-            </div>
-          )}
+          {/* Survey disabled for art portfolio — see SURVEY_DISABLED.md */}
 
           <Button
             type="submit"

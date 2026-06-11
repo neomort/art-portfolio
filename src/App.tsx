@@ -38,7 +38,8 @@ import SignInPage from './pages/SignInPage';
 import VenueLandingPage from './pages/VendorLandingPage';
 import VendorLandingPage from './pages/VenueLandingPage';
 import { useAuth } from './contexts/AuthContext';
-import InquirySettingsPage from './pages/InquirySettingsPage';
+// Survey/inquiry settings page disabled — see SURVEY_DISABLED.md
+// import InquirySettingsPage from './pages/InquirySettingsPage';
 import WebhookDebugPage from './pages/WebhookDebugPage';
 // Stripe diagnostic pages disabled — see STRIPE_DISABLED.md
 // import StripeTestPage from './pages/StripeTestPage';
@@ -98,7 +99,8 @@ function App() {
           <Route path="/add-artwork" element={<ListPropertyPage />} />
           <Route path="/webhook-debug" element={<WebhookDebugPage />} />
           <Route path="/inquiry-debug" element={<InquiryDebugPage />} />
-          <Route path="/inquiry-settings" element={<InquirySettingsPage />} />
+          {/* Survey/inquiry settings page disabled — see SURVEY_DISABLED.md */}
+          {/* <Route path="/inquiry-settings" element={<InquirySettingsPage />} /> */}
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/pages/:id" element={<PageEditorPage />} />
           {/* Button Gallery for style testing */}

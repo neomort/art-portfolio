@@ -74,6 +74,12 @@ export const env = {
     viteEnv?.VITE_STRIPE_ENABLED ?? nodeEnv?.VITE_STRIPE_ENABLED,
     false,
   ),
+  // Master switch for Survey/onboarding functionality. Defaults to false; see SURVEY_DISABLED.md
+  // to re-enable. When false, survey forms are not loaded and InquirySettingsPage is unrouted.
+  SURVEY_ENABLED: toBool(
+    viteEnv?.VITE_SURVEY_ENABLED ?? nodeEnv?.VITE_SURVEY_ENABLED,
+    false,
+  ),
   // Whether email confirmation is required for signup. When false, hide confirmation page.
   AUTH_EMAIL_CONFIRM_ENABLED: toBool(
     viteEnv?.VITE_AUTH_EMAIL_CONFIRM_ENABLED ?? nodeEnv?.VITE_AUTH_EMAIL_CONFIRM_ENABLED,
